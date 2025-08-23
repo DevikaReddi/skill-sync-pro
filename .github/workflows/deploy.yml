@@ -1,0 +1,73 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy-notification:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Deployment Started
+      run: |
+        echo "🚀 Deployment to production started"
+        echo "Commit: ${{ github.sha }}"
+        echo "Triggered by: ${{ github.actor }}"
+        
+  backend-deploy:
+    needs: deploy-notification
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Trigger Render Deploy
+      run: |
+        echo "Render will automatically deploy from the main branch"
+        # Render auto-deploys on push to main, so no action needed
+        # If you want to trigger manually, you can use Render Deploy Hook:
+        # curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+    
+  frontend-deploy:
+    needs: deploy-notification
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Trigger Vercel Deploy
+      run: |
+        echo "Vercel will automatically deploy from the main branch"
+        # Vercel auto-deploys on push to main, so no action needed
+  
+  verify-deployment:
+    needs: [backend-deploy, frontend-deploy]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Wait for deployments
+      run: sleep 60
+    
+    - name: Verify Backend Health
+      run: |
+        response=$(curl -s -o /dev/null -w "%{http_code}" https://skillsync-pro-api.onrender.com/health)
+        if [ $response -eq 200 ]; then
+          echo "✅ Backend is healthy"
+        else
+          echo "❌ Backend health check failed with status $response"
+          exit 1
+        fi
+    
+    - name: Verify Frontend
+      run: |
+        response=$(curl -s -o /dev/null -w "%{http_code}" https://skill-sync-pro.vercel.app)
+        if [ $response -eq 200 ]; then
+          echo "✅ Frontend is accessible"
+        else
+          echo "❌ Frontend check failed with status $response"
+          exit 1
+        fi
+    
+    - name: Deployment Complete
+      run: |
+        echo "✅ Deployment completed successfully!"
+        echo "Backend: https://skillsync-pro-api.onrender.com"
+        echo "Frontend: https://skill-sync-pro.vercel.app"
