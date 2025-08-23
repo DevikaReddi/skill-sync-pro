@@ -35,3 +35,7 @@ Once running, visit http://localhost:8000/docs
 ## License
 MIT
 EOF
+
+## Live Demo
+- 🌐 Application: https://skill-sync-pro-frontend.vercel.app
+- 📚 API Docs: https://skill-sync-pro.onrender.com/docs
