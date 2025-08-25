@@ -1,63 +1,95 @@
-import { useEffect, useState } from 'react'
-import axios from 'axios'
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+import React, { useEffect } from 'react';
+import { Toaster } from 'react-hot-toast';
+import { Header } from './components/Header';
+import { InputForm } from './components/InputForm';
+import { Results } from './components/Results';
+import { useUIStore } from './store/uiStore';
+import { useAnalysisStore } from './store/analysisStore';
+import apiService from './services/api';
 
 function App() {
-  const [apiStatus, setApiStatus] = useState<string>('Checking...')
-  const [apiData, setApiData] = useState<any>(null)
-
+  const { isDarkMode, activeTab } = useUIStore();
+  const { analysisResult } = useAnalysisStore();
+  
+  // Apply dark mode class to HTML element
   useEffect(() => {
-    const checkAPI = async () => {
-      try {
-        const response = await axios.get(`${API_URL}/`)
-        setApiStatus('Connected ✅')
-        setApiData(response.data)
-      } catch (error) {
-        setApiStatus('Not Connected ❌')
-        console.error('API Error:', error)
-      }
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
     }
-    checkAPI()
-  }, [])
-
+  }, [isDarkMode]);
+  
+  // Check API health on mount
+  useEffect(() => {
+    apiService.checkHealth().then((isHealthy) => {
+      if (!isHealthy) {
+        console.warn('API is not responding');
+      }
+    });
+  }, []);
+  
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="container mx-auto px-4 py-16">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-5xl font-bold text-gray-800 mb-4">🎯 SkillSync Pro</h1>
-          <p className="text-xl text-gray-600 mb-8">AI-Powered Resume & Job Description Analyzer</p>
-
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h2 className="text-2xl font-semibold mb-4">System Status</h2>
-            <div className="space-y-2">
-              <p className="text-lg">
-                Frontend: <span className="text-green-600 font-semibold">Operational ✅</span>
-              </p>
-              <p className="text-lg">
-                Backend API: <span className="font-semibold">{apiStatus}</span>
-              </p>
-              {apiData && (
-                <div className="mt-4 p-4 bg-gray-50 rounded">
-                  <pre className="text-sm">{JSON.stringify(apiData, null, 2)}</pre>
-                </div>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 flex flex-col">
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: isDarkMode ? '#1f2937' : '#fff',
+            color: isDarkMode ? '#fff' : '#1f2937',
+            fontSize: '14px',
+          },
+        }}
+      />
+      
+      <Header />
+      
+      <main className="flex-1 container mx-auto py-4 sm:py-6">
+        {/* Tab Navigation */}
+        <div className="flex justify-center mb-4">
+          <div className="inline-flex rounded-lg border border-gray-200 dark:border-gray-700 p-0.5 bg-white dark:bg-gray-800">
+            <button
+              onClick={() => useUIStore.getState().setActiveTab('input')}
+              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                activeTab === 'input'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              Input
+            </button>
+            <button
+              onClick={() => useUIStore.getState().setActiveTab('results')}
+              disabled={!analysisResult}
+              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                activeTab === 'results'
+                  ? 'bg-blue-600 text-white'
+                  : analysisResult
+                  ? 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  : 'text-gray-400 dark:text-gray-600 cursor-not-allowed'
+              }`}
+            >
+              Results
+              {analysisResult && (
+                <span className="ml-1.5 inline-flex items-center justify-center w-1.5 h-1.5 bg-green-500 rounded-full"></span>
               )}
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-2xl font-semibold mb-4">Coming Soon</h2>
-            <ul className="list-disc list-inside space-y-2 text-gray-700">
-              <li>Resume text analysis</li>
-              <li>Job description parsing</li>
-              <li>Skill gap identification</li>
-              <li>AI-powered skill recommendations</li>
-            </ul>
+            </button>
           </div>
         </div>
-      </div>
+        
+        {/* Content */}
+        <div className="transition-all duration-300">
+          {activeTab === 'input' ? <InputForm /> : <Results />}
+        </div>
+      </main>
+      
+      {/* Footer */}
+      <footer className="py-4 text-center text-xs text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-800">
+        <p>© 2024 SkillSync Pro. Built with ❤️ using React, FastAPI, and AI.</p>
+      </footer>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
