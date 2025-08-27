@@ -79,4 +79,17 @@ function App() {
         </div>
         
         {/* Content */}
-        <div cla
+        <div className="transition-all duration-300">
+          {activeTab === 'input' ? <InputForm /> : <Results />}
+        </div>
+      </main>
+      
+      {/* Footer */}
+      <footer className="py-4 text-center text-xs text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-800">
+        <p>© 2024 SkillSync Pro. Built with ❤️ using React, FastAPI, and AI.</p>
+      </footer>
+    </div>
+  );
+}
+
+export default App;
