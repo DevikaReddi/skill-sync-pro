@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { Header } from './components/Header';
 import { InputForm } from './components/InputForm';
@@ -79,17 +79,4 @@ function App() {
         </div>
         
         {/* Content */}
-        <div className="transition-all duration-300">
-          {activeTab === 'input' ? <InputForm /> : <Results />}
-        </div>
-      </main>
-      
-      {/* Footer */}
-      <footer className="py-4 text-center text-xs text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-800">
-        <p>© 2024 SkillSync Pro. Built with ❤️ using React, FastAPI, and AI.</p>
-      </footer>
-    </div>
-  );
-}
-
-export default App;
+        <div cla
