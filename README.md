@@ -68,21 +68,28 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 pip install -r requirements-dev.txt  # For development
 uvicorn app.main:app --reload
+```
 Backend will be available at http://localhost:8000
-Frontend Setup
-bashcd frontend
+
+#### Frontend Setup
+```bash
+cd frontend
 npm install
 npm run dev
+```
 Frontend will be available at http://localhost:5173
-Using Docker
+#### Using Docker
+```bash
 bashdocker-compose up
-🧪 Testing
+```
+### 🧪 Testing
 Backend Tests
-bashcd backend
-pytest
+```bash cd backend
+pytest ```
 Frontend Tests
-bashcd frontend
+``` bash cd frontend
 npm run test
+```
 📦 API Endpoints
 EndpointMethodDescription/GETAPI information/healthGETHealth check/docsGETSwagger documentation/api/v1/analysis/analyzePOSTAnalyze resume against job description/api/v1/analysis/statusGETCheck analysis service status
 🔄 CI/CD Pipeline
@@ -92,30 +99,3 @@ Backend CI - Linting, type checking, unit tests
 Frontend CI - Linting, type checking, unit tests, build verification
 Auto-deployment - Deploy to Render (backend) and Vercel (frontend)
 
-📈 Project Status
-
- Day 1: Project setup and deployment
- Day 2: CI/CD pipeline and testing infrastructure
- Day 3: Core data models and basic UI
- Day 4: NLP setup and skill extraction
- Day 5: AI skill recommendations
- Day 6-15: Additional features and polish
-
-📝 License
-MIT License - see LICENSE file for details
-👤 Author
-Devika Reddi
-
-GitHub: @DevikaReddi
-LinkedIn: Devika Reddi
-
-🙏 Acknowledgments
-
-FastAPI for the amazing framework
-React team for the powerful UI library
-All contributors and testers
-
-
-<div align="center">
-Made with ❤️ and ☕
-</div>
