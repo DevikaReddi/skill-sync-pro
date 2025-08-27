@@ -1,9 +1,4 @@
 import { motion } from 'framer-motion';
-import { 
-  TrophyIcon,
-  AcademicCapIcon,
-  ChartBarIcon
-} from '@heroicons/react/24/outline';
 import { Icon } from './common/Icon';
 
 interface SkillWithScore {
