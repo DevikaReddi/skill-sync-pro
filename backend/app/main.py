@@ -8,6 +8,7 @@ from slowapi.errors import RateLimitExceeded
 
 # Import our modules
 from app.api.v1.analysis import router as analysis_router
+from app.api.v1.advanced import router as advanced_router
 from app.core.rate_limiter import limiter, rate_limit_exceeded_handler
 
 # Configure logging
@@ -16,8 +17,8 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="SkillSync Pro API",
-    description="AI-Powered Resume & Job Description Analyzer",
-    version="1.0.0",
+    description="AI-Powered Resume & Job Description Analyzer with NLP",
+    version="2.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
 )
@@ -47,6 +48,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(analysis_router)
+app.include_router(advanced_router)
 
 # Exception handler
 @app.exception_handler(Exception)
@@ -71,7 +73,13 @@ def read_root(request: Request):
         "status": "operational",
         "timestamp": datetime.now().isoformat(),
         "documentation": "/docs",
-        "version": "1.0.0"
+        "version": "2.0.0",
+        "features": {
+            "nlp": "Advanced NLP with spaCy",
+            "skill_extraction": "Multi-method skill extraction",
+            "semantic_analysis": "Semantic similarity scoring",
+            "experience_detection": "Automatic experience level detection"
+        }
     }
 
 @app.get("/health")

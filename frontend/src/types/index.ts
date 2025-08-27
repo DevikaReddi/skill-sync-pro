@@ -23,6 +23,11 @@ export interface AnalysisResponse {
   recommendations: string[];
   analysis_timestamp: string;
   processing_time_ms?: number;
+  experience_level?: {
+    resume: string;
+    job: string;
+  };
+  key_insights?: string[];
 }
 
 // UI State Types
@@ -37,6 +42,7 @@ export interface AnalysisState {
   // UI state
   isAnalyzing: boolean;
   error: string | null;
+  showAdvanced: boolean;
   
   // Actions
   setResumeText: (text: string) => void;
@@ -44,6 +50,7 @@ export interface AnalysisState {
   analyzeResume: () => Promise<void>;
   resetAnalysis: () => void;
   clearError: () => void;
+  toggleAdvanced: () => void;
 }
 
 export interface UIState {
