@@ -24,7 +24,9 @@ async def analyze_resume(request: ResumeAnalysisRequest):
     a resume and job description, returning detailed analysis results.
     """
     try:
+        logger.info(f"Analyzing resume request received")
         result = await analyzer.analyze(request)
+        logger.info(f"Analysis completed successfully")
         return result
     except Exception as e:
         logger.error(f"Analysis endpoint error: {str(e)}", exc_info=True)

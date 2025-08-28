@@ -23,32 +23,46 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# Add rate limiter to app state
-app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
-
-# Configure CORS
+# Configure CORS BEFORE adding routes
 origins = [
     "http://localhost:5173",
-    "http://localhost:3000",
     "http://localhost:5174",
+    "http://localhost:3000",
+    "http://localhost:4173",
     "https://skill-sync-pro.vercel.app",
     "https://skill-sync-pro-frontend.vercel.app",
-    "https://*.vercel.app",
+    "https://*.vercel.app"
 ]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_methods=["*"],  # This allows all methods including OPTIONS
     allow_headers=["*"],
     expose_headers=["*"],
+    max_age=3600,  # Cache preflight requests for 1 hour
 )
+
+# Add rate limiter AFTER CORS
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
 
 # Include routers
 app.include_router(analysis_router)
 app.include_router(advanced_router)
+
+# Add explicit OPTIONS handler for problematic endpoints
+@app.options("/api/v1/analysis/analyze")
+async def options_analyze():
+    return JSONResponse(
+        content={"message": "OK"},
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "POST, OPTIONS",
+            "Access-Control-Allow-Headers": "*",
+        }
+    )
 
 # Exception handler
 @app.exception_handler(Exception)

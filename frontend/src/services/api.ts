@@ -33,7 +33,11 @@ api.interceptors.response.use(
   (error: AxiosError) => {
     console.error('Response Error:', error.response?.status, error.message);
     
-    // Custom error message based on status
+    // Don't treat OPTIONS as an error
+    if (error.config?.method === 'options') {
+      return Promise.resolve({ data: {} });
+    }
+    
     let message = 'An unexpected error occurred';
     
     if (error.response) {
@@ -55,7 +59,7 @@ api.interceptors.response.use(
           break;
       }
     } else if (error.request) {
-      message = 'Cannot connect to server. Please check your internet connection.';
+      message = 'Cannot connect to server. Please check if the backend is running.';
     }
     
     return Promise.reject(new Error(message));
@@ -74,10 +78,21 @@ export const apiService = {
     }
   },
   
-  // Analyze resume
+  // Analyze resume - with better error handling
   async analyzeResume(request: AnalysisRequest): Promise<AnalysisResponse> {
-    const response = await api.post<AnalysisResponse>('/api/v1/analysis/analyze', request);
-    return response.data;
+    try {
+      const response = await api.post<AnalysisResponse>('/api/v1/analysis/analyze', request);
+      
+      // Validate response structure
+      if (!response.data || typeof response.data.success === 'undefined') {
+        throw new Error('Invalid response format from server');
+      }
+      
+      return response.data;
+    } catch (error) {
+      console.error('Analysis failed:', error);
+      throw error;
+    }
   },
   
   // Get API status
