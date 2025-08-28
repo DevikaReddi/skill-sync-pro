@@ -3,7 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from datetime import datetime
 import logging
-from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
 # Import our modules
@@ -23,46 +22,48 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# Configure CORS BEFORE adding routes
+# ✅ Configure CORS BEFORE adding routes
 origins = [
     "http://localhost:5173",
+    "http://127.0.0.1:5173",
     "http://localhost:5174",
+    "http://127.0.0.1:5174",
     "http://localhost:3000",
+    "http://127.0.0.1:3000",
     "http://localhost:4173",
+    "http://127.0.0.1:4173",
     "https://skill-sync-pro.vercel.app",
     "https://skill-sync-pro-frontend.vercel.app",
-    "https://*.vercel.app"
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],  # This allows all methods including OPTIONS
-    allow_headers=["*"],
-    expose_headers=["*"],
-    max_age=3600,  # Cache preflight requests for 1 hour
+    allow_origins=origins,        # Explicit origins (no "*")
+    allow_credentials=True,       # Required if using cookies/auth
+    allow_methods=["*"],          # Includes OPTIONS
+    allow_headers=["*"],          # Allow all custom headers
+    expose_headers=["*"],         # Optional, useful if you read custom headers
+    max_age=3600,                 # Cache preflight for 1 hour
 )
 
-# Add rate limiter AFTER CORS
+# ✅ Ensure OPTIONS requests bypass rate limiting
+@app.middleware("http")
+async def skip_options_rate_limit(request: Request, call_next):
+    if request.method == "OPTIONS":
+        # Let CORSMiddleware handle it, don't trigger rate limiter
+        return await call_next(request)
+    return await call_next(request)
+
+# ✅ Add rate limiter AFTER CORS
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
 
-# Include routers
+# ✅ Include routers
 app.include_router(analysis_router)
 app.include_router(advanced_router)
 
-# Add explicit OPTIONS handler for problematic endpoints
-@app.options("/api/v1/analysis/analyze")
-async def options_analyze():
-    return JSONResponse(
-        content={"message": "OK"},
-        headers={
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "POST, OPTIONS",
-            "Access-Control-Allow-Headers": "*",
-        }
-    )
+# ❌ Removed manual @app.options("/api/v1/analysis/analyze") 
+#    → CORSMiddleware will now handle preflight correctly
 
 # Exception handler
 @app.exception_handler(Exception)
