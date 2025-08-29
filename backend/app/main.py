@@ -3,11 +3,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from datetime import datetime
 import logging
+from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
 # Import our modules
 from app.api.v1.analysis import router as analysis_router
 from app.api.v1.advanced import router as advanced_router
+from app.api.v1.recommendations import router as recommendations_router
 from app.core.rate_limiter import limiter, rate_limit_exceeded_handler
 
 # Configure logging
@@ -16,8 +18,8 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="SkillSync Pro API",
-    description="AI-Powered Resume & Job Description Analyzer with NLP",
-    version="2.0.0",
+    description="AI-Powered Resume Analyzer with ML Recommendations",
+    version="3.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
 )
@@ -58,12 +60,10 @@ async def skip_options_rate_limit(request: Request, call_next):
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
 
-# ✅ Include routers
+# Include routers
 app.include_router(analysis_router)
 app.include_router(advanced_router)
-
-# ❌ Removed manual @app.options("/api/v1/analysis/analyze") 
-#    → CORSMiddleware will now handle preflight correctly
+app.include_router(recommendations_router)
 
 # Exception handler
 @app.exception_handler(Exception)
@@ -88,12 +88,13 @@ def read_root(request: Request):
         "status": "operational",
         "timestamp": datetime.now().isoformat(),
         "documentation": "/docs",
-        "version": "2.0.0",
+        "version": "3.0.0",
         "features": {
             "nlp": "Advanced NLP with spaCy",
-            "skill_extraction": "Multi-method skill extraction",
-            "semantic_analysis": "Semantic similarity scoring",
-            "experience_detection": "Automatic experience level detection"
+            "ml": "Machine Learning with Sentence Transformers",
+            "recommendations": "AI-powered skill recommendations",
+            "semantic_search": "Semantic similarity matching",
+            "learning_paths": "Personalized learning suggestions"
         }
     }
 
@@ -114,3 +115,16 @@ def test_endpoint(request: Request):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+from app.services.cache_service import cache
+
+@app.get("/api/v1/cache/stats")
+def get_cache_stats():
+    """Get cache statistics."""
+    return cache.stats()
+
+@app.post("/api/v1/cache/clear")
+def clear_cache():
+    """Clear the cache."""
+    cache.clear()
+    return {"message": "Cache cleared successfully"}
