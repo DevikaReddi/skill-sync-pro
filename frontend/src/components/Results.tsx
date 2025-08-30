@@ -2,13 +2,12 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   CheckCircleIcon, 
-  XCircleIcon, 
-  LightBulbIcon,
+  XCircleIcon,
   ChartBarIcon,
   ClockIcon,
   ArrowLeftIcon,
-  DocumentDownloadIcon,
-  TrendingUpIcon
+  DocumentArrowDownIcon, // Correct icon name
+  ArrowTrendingUpIcon    // Correct icon name
 } from '@heroicons/react/24/outline';
 import { useAnalysisStore } from '../store/analysisStore';
 import { useUIStore } from '../store/uiStore';
@@ -183,7 +182,7 @@ export const Results: React.FC = () => {
         pdf.setFontSize(10);
         recommendations.forEach((rec, index) => {
           const lines = pdf.splitTextToSize(`${index + 1}. ${rec}`, pageWidth - 40);
-          lines.forEach(line => {
+          lines.forEach((line: string) => {  // Added type annotation
             if (yPosition > 270) {
               pdf.addPage();
               yPosition = 20;
@@ -229,7 +228,7 @@ export const Results: React.FC = () => {
               disabled={isExporting}
               className="inline-flex items-center px-3 py-1.5 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
             >
-              <Icon icon={DocumentDownloadIcon} size="sm" className="mr-1" />
+              <Icon icon={DocumentArrowDownIcon} size="sm" className="mr-1" />
               {isExporting ? 'Exporting...' : 'Export PDF'}
             </button>
             <button
@@ -397,7 +396,7 @@ export const Results: React.FC = () => {
                   transition={{ delay: 0.7 }}
                   className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 text-center"
                 >
-                  <TrendingUpIcon className="w-8 h-8 mx-auto mb-2 text-purple-600 dark:text-purple-400" />
+                  <ArrowTrendingUpIcon className="w-8 h-8 mx-auto mb-2 text-purple-600 dark:text-purple-400" />
                   <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                     {recommendations.length}
                   </div>

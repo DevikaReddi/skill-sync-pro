@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  CheckCircleIcon, 
-  XCircleIcon, 
-  ChartBarIcon,
+  CheckCircleIcon,
   ArrowUpIcon,
   ArrowDownIcon,
   InformationCircleIcon,
@@ -56,10 +54,8 @@ export const SkillCard: React.FC<SkillCardProps> = ({
 
   const color = colors[colorScheme];
 
-  // Get unique categories
   const categories = ['all', ...new Set(skills.map(s => s.category || 'Other'))];
 
-  // Filter and sort skills
   let displaySkills = [...skills];
   if (filterCategory !== 'all') {
     displaySkills = displaySkills.filter(s => (s.category || 'Other') === filterCategory);
@@ -100,7 +96,6 @@ export const SkillCard: React.FC<SkillCardProps> = ({
       animate={{ y: 0, opacity: 1 }}
       className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden`}
     >
-      {/* Header */}
       <div className={`px-6 py-4 ${color.bg} border-b ${color.border}`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center">
@@ -115,7 +110,6 @@ export const SkillCard: React.FC<SkillCardProps> = ({
         </div>
       </div>
 
-      {/* Controls */}
       <div className="px-6 py-3 border-b border-gray-200 dark:border-gray-700">
         <div className="flex flex-col sm:flex-row gap-3">
           <select
@@ -142,7 +136,6 @@ export const SkillCard: React.FC<SkillCardProps> = ({
         </div>
       </div>
 
-      {/* Skills List */}
       <div className="px-6 py-4 max-h-96 overflow-y-auto">
         <AnimatePresence>
           {displaySkills.length > 0 ? (
@@ -254,7 +247,6 @@ export const InsightsPanel: React.FC<InsightsProps> = ({
   };
 
   const getActionableSteps = (recommendation: string): string[] => {
-    // Simple logic to generate actionable steps based on recommendation
     if (recommendation.toLowerCase().includes('docker')) {
       return [
         'Start with Docker fundamentals course on Docker Hub',
@@ -293,7 +285,6 @@ export const InsightsPanel: React.FC<InsightsProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Key Insights Summary */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -337,7 +328,6 @@ export const InsightsPanel: React.FC<InsightsProps> = ({
         </div>
       </motion.div>
 
-      {/* Actionable Recommendations */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
           Actionable Recommendations
