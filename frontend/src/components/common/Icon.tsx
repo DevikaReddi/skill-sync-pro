@@ -2,31 +2,27 @@ import React from 'react';
 
 interface IconProps {
   icon: React.ComponentType<any>;
-  size?: 'xs' | 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
 }
 
-const sizeMap = {
-  xs: { width: 12, height: 12 },
-  sm: { width: 16, height: 16 },
-  md: { width: 20, height: 20 },
-  lg: { width: 24, height: 24 },
-};
+export const Icon: React.FC<IconProps> = ({ 
+  icon: IconComponent, 
+  size = 'md', 
+  className = '' 
+}) => {
+  const sizeClasses = {
+    xs: 'w-3 h-3',
+    sm: 'w-4 h-4',
+    md: 'w-5 h-5',
+    lg: 'w-6 h-6',
+    xl: 'w-8 h-8'
+  };
 
-export const Icon: React.FC<IconProps> = ({ icon: IconComponent, size = 'sm', className = '' }) => {
-  const dimensions = sizeMap[size];
-  
   return (
     <IconComponent 
-      className={`flex-shrink-0 ${className}`}
-      style={{
-        width: `${dimensions.width}px`,
-        height: `${dimensions.height}px`,
-        minWidth: `${dimensions.width}px`,
-        minHeight: `${dimensions.height}px`,
-        maxWidth: `${dimensions.width}px`,
-        maxHeight: `${dimensions.height}px`,
-      }}
+      className={`${sizeClasses[size]} ${className}`} 
+      aria-hidden="true"
     />
   );
 };

@@ -2,80 +2,64 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Global styles */
 @layer base {
   body {
     @apply antialiased;
   }
   
-  /* Custom scrollbar */
-  ::-webkit-scrollbar {
+  /* Ensure all SVG icons are properly constrained */
+  svg {
+    @apply flex-shrink-0;
+    max-width: 100%;
+    height: auto;
+  }
+  
+  /* Heroicons specific fix */
+  svg[aria-hidden="true"] {
+    @apply flex-shrink-0;
+  }
+}
+
+/* Custom scrollbar */
+@layer utilities {
+  /* Webkit browsers */
+  .custom-scrollbar::-webkit-scrollbar {
     width: 8px;
     height: 8px;
   }
   
-  ::-webkit-scrollbar-track {
-    @apply bg-gray-100 dark:bg-gray-800;
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-gray-100 dark:bg-gray-800 rounded-lg;
   }
   
-  ::-webkit-scrollbar-thumb {
-    @apply bg-gray-400 dark:bg-gray-600 rounded-full;
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-gray-400 dark:bg-gray-600 rounded-lg hover:bg-gray-500 dark:hover:bg-gray-500;
   }
   
-  ::-webkit-scrollbar-thumb:hover {
-    @apply bg-gray-500 dark:bg-gray-500;
+  /* Firefox */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: theme('colors.gray.400') theme('colors.gray.100');
+  }
+  
+  .dark .custom-scrollbar {
+    scrollbar-color: theme('colors.gray.600') theme('colors.gray.800');
   }
 }
 
-@layer components {
-  /* Force icon sizes globally */
-  .icon-xs {
-    @apply flex-shrink-0;
-    width: 12px !important;
-    height: 12px !important;
-    min-width: 12px !important;
-    min-height: 12px !important;
-    max-width: 12px !important;
-    max-height: 12px !important;
+/* Animation keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
   }
-  
-  .icon-sm {
-    @apply flex-shrink-0;
-    width: 16px !important;
-    height: 16px !important;
-    min-width: 16px !important;
-    min-height: 16px !important;
-    max-width: 16px !important;
-    max-height: 16px !important;
-  }
-  
-  .icon-md {
-    @apply flex-shrink-0;
-    width: 20px !important;
-    height: 20px !important;
-    min-width: 20px !important;
-    min-height: 20px !important;
-    max-width: 20px !important;
-    max-height: 20px !important;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-@layer utilities {
-  /* Animation classes */
-  .animate-float {
-    animation: float 3s ease-in-out infinite;
-  }
-  
-  @keyframes float {
-    0%, 100% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(-10px);
-    }
-  }
-  
-  /* Override heroicons default size */
-  svg[class*="heroicon"] {
-    flex-shrink: 0 !important;
-  }
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out;
 }
