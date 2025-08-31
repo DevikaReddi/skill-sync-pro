@@ -6,12 +6,11 @@ import {
   ChartBarIcon,
   ClockIcon,
   ArrowLeftIcon,
-  DocumentArrowDownIcon, // Correct icon name
-  ArrowTrendingUpIcon    // Correct icon name
+  DocumentArrowDownIcon,
+  ArrowTrendingUpIcon
 } from '@heroicons/react/24/outline';
 import { useAnalysisStore } from '../store/analysisStore';
 import { useUIStore } from '../store/uiStore';
-import { Icon } from './common/Icon';
 import { SkillCard, InsightsPanel } from './SkillDetails';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title } from 'chart.js';
 import { Pie, Bar } from 'react-chartjs-2';
@@ -35,7 +34,7 @@ export const Results: React.FC = () => {
           animate={{ scale: 1, opacity: 1 }}
           className="text-center"
         >
-          <ChartBarIcon className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+          <ChartBarIcon className="h-16 w-16 mx-auto text-gray-400 mb-4" style={{ maxWidth: '64px', maxHeight: '64px' }} />
           <p className="text-gray-500 dark:text-gray-400 text-lg mb-4">No analysis results yet</p>
           <button
             onClick={() => setActiveTab('input')}
@@ -149,31 +148,6 @@ export const Results: React.FC = () => {
       pdf.setTextColor(59, 130, 246);
       pdf.text(`★ Unique Skills (${skill_analysis.unique_skills.length})`, 25, yPosition);
       
-      if (skill_analysis.matching_skills.length > 0) {
-        yPosition += 15;
-        pdf.setFontSize(12);
-        pdf.setTextColor(31, 41, 55);
-        pdf.text('Top Matching Skills:', 20, yPosition);
-        yPosition += 8;
-        pdf.setFontSize(10);
-        skill_analysis.matching_skills.slice(0, 5).forEach(skill => {
-          pdf.text(`• ${skill.name}`, 25, yPosition);
-          yPosition += 6;
-        });
-      }
-      
-      if (skill_analysis.skill_gaps.length > 0) {
-        yPosition += 5;
-        pdf.setFontSize(12);
-        pdf.text('Priority Skill Gaps:', 20, yPosition);
-        yPosition += 8;
-        pdf.setFontSize(10);
-        skill_analysis.skill_gaps.slice(0, 5).forEach(skill => {
-          pdf.text(`• ${skill.name}`, 25, yPosition);
-          yPosition += 6;
-        });
-      }
-      
       if (recommendations.length > 0) {
         yPosition += 10;
         pdf.setFontSize(12);
@@ -182,7 +156,7 @@ export const Results: React.FC = () => {
         pdf.setFontSize(10);
         recommendations.forEach((rec, index) => {
           const lines = pdf.splitTextToSize(`${index + 1}. ${rec}`, pageWidth - 40);
-          lines.forEach((line: string) => {  // Added type annotation
+          lines.forEach((line: string) => {
             if (yPosition > 270) {
               pdf.addPage();
               yPosition = 20;
@@ -218,7 +192,7 @@ export const Results: React.FC = () => {
             onClick={() => setActiveTab('input')}
             className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors"
           >
-            <Icon icon={ArrowLeftIcon} size="sm" className="mr-1" />
+            <ArrowLeftIcon className="h-4 w-4 mr-1" style={{ maxWidth: '16px', maxHeight: '16px' }} />
             Back to Input
           </button>
           
@@ -228,7 +202,7 @@ export const Results: React.FC = () => {
               disabled={isExporting}
               className="inline-flex items-center px-3 py-1.5 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
             >
-              <Icon icon={DocumentArrowDownIcon} size="sm" className="mr-1" />
+              <DocumentArrowDownIcon className="h-4 w-4 mr-1" style={{ maxWidth: '16px', maxHeight: '16px' }} />
               {isExporting ? 'Exporting...' : 'Export PDF'}
             </button>
             <button
@@ -272,7 +246,7 @@ export const Results: React.FC = () => {
                     <p className="text-lg opacity-90">{matchLevel.level}</p>
                     {processing_time_ms && (
                       <p className="mt-2 text-sm opacity-75 flex items-center">
-                        <ClockIcon className="w-4 h-4 mr-1" />
+                        <ClockIcon className="h-4 w-4 mr-1" style={{ maxWidth: '16px', maxHeight: '16px' }} />
                         Analyzed in {processing_time_ms}ms
                       </p>
                     )}
@@ -357,7 +331,7 @@ export const Results: React.FC = () => {
                   transition={{ delay: 0.4 }}
                   className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 text-center"
                 >
-                  <CheckCircleIcon className="w-8 h-8 mx-auto mb-2 text-green-600 dark:text-green-400" />
+                  <CheckCircleIcon className="h-8 w-8 mx-auto mb-2 text-green-600 dark:text-green-400" style={{ maxWidth: '32px', maxHeight: '32px' }} />
                   <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                     {skill_analysis.matching_skills.length}
                   </div>
@@ -370,7 +344,7 @@ export const Results: React.FC = () => {
                   transition={{ delay: 0.5 }}
                   className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 text-center"
                 >
-                  <XCircleIcon className="w-8 h-8 mx-auto mb-2 text-red-600 dark:text-red-400" />
+                  <XCircleIcon className="h-8 w-8 mx-auto mb-2 text-red-600 dark:text-red-400" style={{ maxWidth: '32px', maxHeight: '32px' }} />
                   <div className="text-2xl font-bold text-red-600 dark:text-red-400">
                     {skill_analysis.skill_gaps.length}
                   </div>
@@ -383,7 +357,7 @@ export const Results: React.FC = () => {
                   transition={{ delay: 0.6 }}
                   className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 text-center"
                 >
-                  <ChartBarIcon className="w-8 h-8 mx-auto mb-2 text-blue-600 dark:text-blue-400" />
+                  <ChartBarIcon className="h-8 w-8 mx-auto mb-2 text-blue-600 dark:text-blue-400" style={{ maxWidth: '32px', maxHeight: '32px' }} />
                   <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                     {skill_analysis.unique_skills.length}
                   </div>
@@ -396,7 +370,7 @@ export const Results: React.FC = () => {
                   transition={{ delay: 0.7 }}
                   className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 text-center"
                 >
-                  <ArrowTrendingUpIcon className="w-8 h-8 mx-auto mb-2 text-purple-600 dark:text-purple-400" />
+                  <ArrowTrendingUpIcon className="h-8 w-8 mx-auto mb-2 text-purple-600 dark:text-purple-400" style={{ maxWidth: '32px', maxHeight: '32px' }} />
                   <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                     {recommendations.length}
                   </div>

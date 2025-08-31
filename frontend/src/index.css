@@ -8,22 +8,39 @@
     @apply antialiased;
   }
   
-  /* Ensure all SVG icons are properly constrained */
+  /* Force all SVG icons to have maximum sizes */
   svg {
-    @apply flex-shrink-0;
-    max-width: 100%;
-    height: auto;
+    max-width: 100% !important;
+    height: auto !important;
+    flex-shrink: 0;
   }
   
-  /* Heroicons specific fix */
+  /* Specific override for Heroicons */
   svg[aria-hidden="true"] {
-    @apply flex-shrink-0;
+    max-width: 2rem !important;
+    max-height: 2rem !important;
   }
+  
+  /* Override for specific icon sizes */
+  .h-3 { height: 0.75rem !important; }
+  .h-4 { height: 1rem !important; }
+  .h-5 { height: 1.25rem !important; }
+  .h-6 { height: 1.5rem !important; }
+  .h-8 { height: 2rem !important; }
+  .h-12 { height: 3rem !important; }
+  .h-16 { height: 4rem !important; }
+  
+  .w-3 { width: 0.75rem !important; }
+  .w-4 { width: 1rem !important; }
+  .w-5 { width: 1.25rem !important; }
+  .w-6 { width: 1.5rem !important; }
+  .w-8 { width: 2rem !important; }
+  .w-12 { width: 3rem !important; }
+  .w-16 { width: 4rem !important; }
 }
 
 /* Custom scrollbar */
 @layer utilities {
-  /* Webkit browsers */
   .custom-scrollbar::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -37,7 +54,6 @@
     @apply bg-gray-400 dark:bg-gray-600 rounded-lg hover:bg-gray-500 dark:hover:bg-gray-500;
   }
   
-  /* Firefox */
   .custom-scrollbar {
     scrollbar-width: thin;
     scrollbar-color: theme('colors.gray.400') theme('colors.gray.100');
@@ -46,20 +62,4 @@
   .dark .custom-scrollbar {
     scrollbar-color: theme('colors.gray.600') theme('colors.gray.800');
   }
-}
-
-/* Animation keyframes */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fadeIn {
-  animation: fadeIn 0.5s ease-out;
 }
