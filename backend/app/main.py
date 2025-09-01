@@ -36,7 +36,7 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# Configure CORS
+# Configure CORS - Add your specific Vercel URL
 origins = [
     "http://localhost:5173",
     "http://localhost:5174", 
@@ -44,7 +44,9 @@ origins = [
     "http://localhost:4173",
     "https://skill-sync-pro.vercel.app",
     "https://skill-sync-pro-frontend.vercel.app",
-    "https://*.vercel.app"
+    "https://skill-sync-pro-frontend-i6sviq5ya-devika-reddis-projects.vercel.app",  # Your specific deployment
+    "https://*.vercel.app",
+    "*"  # Allow all origins temporarily for testing
 ]
 
 app.add_middleware(
@@ -57,6 +59,7 @@ app.add_middleware(
     max_age=3600,
 )
 
+# Rest of your code remains the same...
 # Add performance monitoring middleware
 app.add_middleware(PerformanceMiddleware)
 
