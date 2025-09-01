@@ -6,64 +6,63 @@ import logging
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
-# Import our modules
+# Import database
+from app.core.database import engine, Base
+
+# Import routers
 from app.api.v1.analysis import router as analysis_router
 from app.api.v1.advanced import router as advanced_router
 from app.api.v1.recommendations import router as recommendations_router
+from app.api.v1.auth import router as auth_router
+from app.api.v1.history import router as history_router
 from app.core.rate_limiter import limiter, rate_limit_exceeded_handler
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Create database tables
+Base.metadata.create_all(bind=engine)
+
 app = FastAPI(
     title="SkillSync Pro API",
-    description="AI-Powered Resume Analyzer with ML Recommendations",
-    version="3.0.0",
+    description="AI-Powered Resume Analyzer with Authentication",
+    version="4.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
 )
 
-# ✅ Configure CORS BEFORE adding routes
+# Configure CORS
 origins = [
     "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://localhost:5174",
-    "http://127.0.0.1:5174",
+    "http://localhost:5174", 
     "http://localhost:3000",
-    "http://127.0.0.1:3000",
     "http://localhost:4173",
-    "http://127.0.0.1:4173",
     "https://skill-sync-pro.vercel.app",
     "https://skill-sync-pro-frontend.vercel.app",
+    "https://*.vercel.app"
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,        # Explicit origins (no "*")
-    allow_credentials=True,       # Required if using cookies/auth
-    allow_methods=["*"],          # Includes OPTIONS
-    allow_headers=["*"],          # Allow all custom headers
-    expose_headers=["*"],         # Optional, useful if you read custom headers
-    max_age=3600,                 # Cache preflight for 1 hour
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["*"],
+    max_age=3600,
 )
 
-# ✅ Ensure OPTIONS requests bypass rate limiting
-@app.middleware("http")
-async def skip_options_rate_limit(request: Request, call_next):
-    if request.method == "OPTIONS":
-        # Let CORSMiddleware handle it, don't trigger rate limiter
-        return await call_next(request)
-    return await call_next(request)
-
-# ✅ Add rate limiter AFTER CORS
+# Add rate limiter
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
 
 # Include routers
+app.include_router(auth_router)
 app.include_router(analysis_router)
 app.include_router(advanced_router)
 app.include_router(recommendations_router)
+app.include_router(history_router)
 
 # Exception handler
 @app.exception_handler(Exception)
@@ -88,43 +87,20 @@ def read_root(request: Request):
         "status": "operational",
         "timestamp": datetime.now().isoformat(),
         "documentation": "/docs",
-        "version": "3.0.0",
+        "version": "4.0.0",
         "features": {
-            "nlp": "Advanced NLP with spaCy",
-            "ml": "Machine Learning with Sentence Transformers",
-            "recommendations": "AI-powered skill recommendations",
-            "semantic_search": "Semantic similarity matching",
-            "learning_paths": "Personalized learning suggestions"
+            "authentication": "JWT-based authentication",
+            "analysis": "AI-powered resume analysis",
+            "history": "Save and retrieve analysis history",
+            "recommendations": "Smart skill recommendations"
         }
     }
 
 @app.get("/health")
 def health_check():
     """Health check endpoint for monitoring."""
-    return {"status": "healthy"}
-
-@app.get("/api/v1/test")
-@limiter.limit("30 per minute")
-def test_endpoint(request: Request):
-    """Test endpoint for API v1."""
-    return {
-        "message": "API v1 is working!",
-        "endpoint": "test"
-    }
+    return {"status": "healthy", "timestamp": datetime.now().isoformat()}
 
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
-
-from app.services.cache_service import cache
-
-@app.get("/api/v1/cache/stats")
-def get_cache_stats():
-    """Get cache statistics."""
-    return cache.stats()
-
-@app.post("/api/v1/cache/clear")
-def clear_cache():
-    """Clear the cache."""
-    cache.clear()
-    return {"message": "Cache cleared successfully"}
