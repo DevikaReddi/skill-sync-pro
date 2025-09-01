@@ -15,7 +15,11 @@ from app.api.v1.advanced import router as advanced_router
 from app.api.v1.recommendations import router as recommendations_router
 from app.api.v1.auth import router as auth_router
 from app.api.v1.history import router as history_router
+from app.api.v1.analytics import router as analytics_router
 from app.core.rate_limiter import limiter, rate_limit_exceeded_handler
+
+# Import monitoring
+from app.core.monitoring import PerformanceMiddleware, get_system_metrics
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -53,6 +57,9 @@ app.add_middleware(
     max_age=3600,
 )
 
+# Add performance monitoring middleware
+app.add_middleware(PerformanceMiddleware)
+
 # Add rate limiter
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
@@ -63,6 +70,7 @@ app.include_router(analysis_router)
 app.include_router(advanced_router)
 app.include_router(recommendations_router)
 app.include_router(history_router)
+app.include_router(analytics_router)
 
 # Exception handler
 @app.exception_handler(Exception)
@@ -92,7 +100,8 @@ def read_root(request: Request):
             "authentication": "JWT-based authentication",
             "analysis": "AI-powered resume analysis",
             "history": "Save and retrieve analysis history",
-            "recommendations": "Smart skill recommendations"
+            "recommendations": "Smart skill recommendations",
+            "analytics": "User analytics and insights"
         }
     }
 
@@ -100,6 +109,11 @@ def read_root(request: Request):
 def health_check():
     """Health check endpoint for monitoring."""
     return {"status": "healthy", "timestamp": datetime.now().isoformat()}
+
+@app.get("/system/health")
+async def system_health():
+    """System health metrics."""
+    return await get_system_metrics()
 
 if __name__ == "__main__":
     import uvicorn
