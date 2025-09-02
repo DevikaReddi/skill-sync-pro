@@ -108,3 +108,11 @@ async def system_health():
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+# Add these imports at the top
+from app.api.v1.websocket import router as websocket_router
+from app.api.v1.collaboration import router as collaboration_router
+
+# Add these routers after other includes
+app.include_router(websocket_router)
+app.include_router(collaboration_router)

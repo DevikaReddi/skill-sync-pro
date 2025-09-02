@@ -194,3 +194,44 @@ class ResumeAnalyzer:
             if any(s in skill_lower for s in skills):
                 return category
         return 'Other'
+
+    async def analyze_with_updates(self, request: ResumeAnalysisRequest, client_id: str = None):
+        """Perform analysis with real-time updates."""
+        from app.core.websocket import manager
+        import json
+        
+        async def send_update(stage: str, progress: int):
+            if client_id:
+                await manager.send_personal_message(
+                    json.dumps({
+                        "type": "analysis_progress",
+                        "stage": stage,
+                        "progress": progress
+                    }),
+                    client_id
+                )
+        
+        # Send progress updates
+        await send_update("Starting analysis", 0)
+        
+        # Text cleaning
+        await send_update("Cleaning text", 20)
+        clean_resume = self.text_processor.clean_text(request.resume_text)
+        clean_jd = self.text_processor.clean_text(request.job_description)
+        
+        # Skill extraction
+        await send_update("Extracting skills", 40)
+        resume_skills = self.nlp_service.extract_skills_advanced(request.resume_text)
+        jd_skills = self.nlp_service.extract_skills_advanced(request.job_description)
+        
+        # Matching
+        await send_update("Matching skills", 60)
+        result = await self.analyze(request)
+        
+        # Generating recommendations
+        await send_update("Generating recommendations", 80)
+        
+        # Complete
+        await send_update("Analysis complete", 100)
+        
+        return result
