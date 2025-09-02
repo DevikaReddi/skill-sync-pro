@@ -1,6 +1,7 @@
 alembic==1.13.1
 annotated-types==0.7.0
-anyio==4.10.0bcrypt==4.3.0
+anyio==4.10.0
+bcrypt==4.3.0
 black==23.12.1
 blis==0.7.11
 catalogue==2.0.10
