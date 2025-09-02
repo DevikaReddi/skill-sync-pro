@@ -116,3 +116,32 @@ from app.api.v1.collaboration import router as collaboration_router
 # Add these routers after other includes
 app.include_router(websocket_router)
 app.include_router(collaboration_router)
+
+# Add these imports at the top
+from fastapi.middleware.gzip import GZipMiddleware
+
+# Add compression middleware after CORS
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+
+# Add these imports
+from app.api.v1.insights import router as insights_router
+
+# Add insights router
+app.include_router(insights_router)
+
+# Add startup event for cleanup
+@app.on_event("startup")
+async def startup_event():
+    """Run startup tasks."""
+    logger.info("Starting SkillSync Pro API...")
+    
+    # Clean up old sessions if using collaboration
+    from app.services.collaboration import collaboration_manager
+    cleaned = collaboration_manager.cleanup_inactive_sessions()
+    if cleaned > 0:
+        logger.info(f"Cleaned up {cleaned} inactive sessions")
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Run shutdown tasks."""
+    logger.info("Shutting down SkillSync Pro API...")

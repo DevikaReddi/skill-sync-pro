@@ -1,10 +1,11 @@
+aiocache==0.12.2
 aiohappyeyeballs==2.6.1
 aiohttp==3.12.15
 aiosignal==1.4.0
 alembic==1.13.1
 annotated-types==0.7.0
 anyio==4.10.0
--e git+https://github.com/DevikaReddi/skill-sync-pro.git@172bb7926dc65109385e4d2776e3038f5ac8e172#egg=app&subdirectory=backend
+-e git+https://github.com/DevikaReddi/skill-sync-pro.git@94479bc092200eab0ceabbfbd03acd60390a01ea#egg=app&subdirectory=backend
 attrs==25.3.0
 bcrypt==4.3.0
 bidict==0.23.1
@@ -102,13 +103,14 @@ python-jose==3.3.0
 python-multipart==0.0.6
 python-socketio==5.11.0
 PyYAML==6.0.2
+redis==5.0.1
 regex==2025.7.34
 requests==2.32.5
 requests-file==2.1.0
 rsa==4.9.1
 safetensors==0.6.2
 scikit-learn==1.3.2
-scipy==1.16.1
+scipy==1.11.4
 sentence-transformers==2.2.2
 sentencepiece==0.2.1
 setuptools==80.9.0
