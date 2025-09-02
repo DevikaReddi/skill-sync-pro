@@ -1,5 +1,5 @@
 """Collaborative session management."""
-from typing import Dict, Set, Optional
+from typing import Any, Dict, Set, Optional
 from datetime import datetime, timedelta
 import uuid
 import json

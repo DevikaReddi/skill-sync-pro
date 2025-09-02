@@ -145,3 +145,14 @@ async def startup_event():
 async def shutdown_event():
     """Run shutdown tasks."""
     logger.info("Shutting down SkillSync Pro API...")
+
+# Add these imports at the top
+from app.api.v1.upload import router as upload_router
+from app.api.v1.templates import router as templates_router
+
+# Add these routers
+app.include_router(upload_router)
+app.include_router(templates_router)
+
+# Add email notification on user registration (update existing auth endpoint)
+# This would be added to the registration endpoint in auth.py

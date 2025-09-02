@@ -136,3 +136,10 @@ async def update_me(
     db.commit()
     db.refresh(current_user)
     return current_user
+
+# Add this to the register endpoint after user creation
+from app.services.email_service import email_service
+import asyncio
+
+# After db.commit() in register endpoint, add:
+# asyncio.create_task(email_service.send_welcome_email(user_data.email, user_data.username))

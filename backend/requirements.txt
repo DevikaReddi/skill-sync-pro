@@ -5,6 +5,7 @@ aiosignal==1.4.0
 alembic==1.13.1
 annotated-types==0.7.0
 anyio==4.10.0
+-e git+https://github.com/DevikaReddi/skill-sync-pro.git@a12413fb2340378f72df9787dfc53b25d8de486a#egg=app&subdirectory=backend
 attrs==25.3.0
 bcrypt==4.3.0
 bidict==0.23.1
@@ -21,6 +22,7 @@ confection==0.1.5
 coverage==7.10.5
 cryptography==45.0.6
 cymem==2.0.11
+defusedxml==0.7.1
 Deprecated==1.2.18
 dnspython==2.7.0
 ecdsa==0.19.1
@@ -29,6 +31,8 @@ en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_
 fastapi==0.109.0
 filelock==3.19.1
 flake8==7.0.0
+fonttools==4.59.2
+fpdf2==2.7.7
 frozenlist==1.7.0
 fsspec==2025.7.0
 future==1.0.0
@@ -77,6 +81,8 @@ nvidia-nvtx-cu12==12.8.90
 packaging==25.0
 passlib==1.7.4
 pathspec==0.12.1
+pdfminer.six==20221105
+pdfplumber==0.10.3
 pillow==11.3.0
 platformdirs==4.3.8
 pluggy==1.6.0
@@ -92,6 +98,8 @@ pydantic==2.5.3
 pydantic-settings==2.1.0
 pydantic_core==2.14.6
 pyflakes==3.2.0
+PyPDF2==3.0.1
+pypdfium2==4.30.0
 PySocks==1.7.1
 pytest==7.4.4
 pytest-asyncio==0.21.1
