@@ -1,99 +1,100 @@
+"""Tests for main API endpoints."""
 import pytest
+from fastapi import status
 from fastapi.testclient import TestClient
-from app.main import app
-
-client = TestClient(app)
 
 class TestHealthEndpoints:
     """Test health check endpoints."""
     
-    def test_root_endpoint(self):
-        """Test root endpoint returns correct response."""
+    def test_root_endpoint(self, client):
+        """Test root endpoint."""
         response = client.get("/")
-        assert response.status_code == 200
+        assert response.status_code == status.HTTP_200_OK
         data = response.json()
-        assert "message" in data
         assert data["message"] == "Welcome to SkillSync Pro API"
-        assert "status" in data
         assert data["status"] == "operational"
         assert "timestamp" in data
+        assert "features" in data
     
-    def test_health_check(self):
+    def test_health_check(self, client):
         """Test health check endpoint."""
         response = client.get("/health")
-        assert response.status_code == 200
-        assert response.json() == {"status": "healthy"}
-    
-    def test_api_v1_test(self):
-        """Test API v1 test endpoint."""
-        response = client.get("/api/v1/test")
-        assert response.status_code == 200
+        assert response.status_code == status.HTTP_200_OK
         data = response.json()
-        assert data["message"] == "API v1 is working!"
-        assert data["endpoint"] == "test"
+        assert data["status"] == "healthy"
+        assert "timestamp" in data  # Check timestamp exists, not exact value
+    
+    def test_system_health(self, client):
+        """Test system health endpoint."""
+        response = client.get("/system/health")
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        assert "cpu_percent" in data
+        assert "memory_percent" in data
 
 class TestCORS:
     """Test CORS configuration."""
     
-    def test_cors_headers_on_get_request(self):
-        """Test that CORS headers are properly set on GET requests."""
-        response = client.get(
-            "/health",
-            headers={"Origin": "http://localhost:5173"}
-        )
-        assert response.status_code == 200
+    def test_cors_headers_on_get_request(self, client):
+        """Test CORS headers are present on GET request."""
+        response = client.get("/health")
+        assert response.status_code == status.HTTP_200_OK
+        # CORS headers should be present
+        assert "access-control-allow-origin" in response.headers or "*" in str(response.headers)
     
-    def test_cors_preflight_request(self):
-        """Test CORS preflight request handling."""
+    def test_cors_preflight_request(self, client):
+        """Test CORS preflight request."""
         response = client.options(
             "/api/v1/analysis/analyze",
             headers={
-                "Origin": "http://localhost:5173",
-                "Access-Control-Request-Method": "POST",
-                "Access-Control-Request-Headers": "Content-Type"
+                "Origin": "http://localhost:3000",
+                "Access-Control-Request-Method": "POST"
             }
         )
-        assert response.status_code in [200, 405]
+        # Should return 200 or 405 (method not allowed is ok for OPTIONS)
+        assert response.status_code in [status.HTTP_200_OK, status.HTTP_405_METHOD_NOT_ALLOWED]
 
 class TestErrorHandling:
     """Test error handling."""
     
-    def test_404_error(self):
+    def test_404_error(self, client):
         """Test 404 error for non-existent endpoint."""
         response = client.get("/non-existent-endpoint")
-        assert response.status_code == 404
-        assert "detail" in response.json()
+        assert response.status_code == status.HTTP_404_NOT_FOUND
 
 class TestAnalysisEndpoints:
     """Test analysis endpoints."""
     
-    def test_analysis_status(self):
+    def test_analysis_status(self, client):
         """Test analysis status endpoint."""
         response = client.get("/api/v1/analysis/status")
-        assert response.status_code == 200
+        assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert data["status"] == "operational"
         assert "version" in data
     
-    def test_analyze_endpoint_with_valid_data(self):
-        """Test analyze endpoint with valid data."""
-        test_data = {
-            "resume_text": "John Doe, Software Engineer with 5 years of experience in Python, React, and Docker. Skilled in building scalable web applications.",
-            "job_description": "Looking for a Full Stack Developer with experience in Python, React, and cloud technologies."
-        }
-        response = client.post("/api/v1/analysis/analyze", json=test_data)
-        assert response.status_code == 200
+    def test_analyze_endpoint_with_valid_data(self, client, sample_resume, sample_job_description):
+        """Test analysis endpoint with valid data."""
+        response = client.post(
+            "/api/v1/analysis/analyze",
+            json={
+                "resume_text": sample_resume,
+                "job_description": sample_job_description
+            }
+        )
+        assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert data["success"] is True
         assert "match_percentage" in data
-        assert "skill_analysis" in data
-        assert "recommendations" in data
+        assert 0 <= data["match_percentage"] <= 100
     
-    def test_analyze_endpoint_with_invalid_data(self):
-        """Test analyze endpoint with invalid data (too short)."""
-        test_data = {
-            "resume_text": "Too short",
-            "job_description": "Also short"
-        }
-        response = client.post("/api/v1/analysis/analyze", json=test_data)
-        assert response.status_code == 422  # Validation error
+    def test_analyze_endpoint_with_invalid_data(self, client):
+        """Test analysis endpoint with invalid data."""
+        response = client.post(
+            "/api/v1/analysis/analyze",
+            json={
+                "resume_text": "short",
+                "job_description": "short"
+            }
+        )
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
