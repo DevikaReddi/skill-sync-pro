@@ -7,10 +7,15 @@ import {
   ArrowRightIcon,
   DocumentDuplicateIcon,
   TrashIcon,
-  LightBulbIcon
+  LightBulbIcon,
+  CloudArrowUpIcon,
+  PencilSquareIcon,
+  ArrowPathIcon
 } from '@heroicons/react/24/outline';
 import { useAnalysisStore } from '../store/analysisStore';
 import { useUIStore } from '../store/uiStore';
+import { FileUpload } from './FileUpload';
+import { uploadService } from '../services/uploadService';
 import toast from 'react-hot-toast';
 
 const sampleData = {
@@ -48,6 +53,8 @@ REQUIREMENTS:
 - Knowledge of CI/CD pipelines and DevOps practices`
 };
 
+type InputMode = 'upload' | 'manual';
+
 export const InputForm: React.FC = () => {
   const { 
     resumeText, 
@@ -59,7 +66,50 @@ export const InputForm: React.FC = () => {
   } = useAnalysisStore();
   
   const { setActiveTab } = useUIStore();
-  const [activeInput, setActiveInput] = useState<'resume' | 'job' | null>(null);
+  const [inputMode, setInputMode] = useState<InputMode>('upload');
+  const [isUploading, setIsUploading] = useState({ resume: false, job: false });
+  
+  const handleResumeUpload = async (file: File) => {
+    setIsUploading(prev => ({ ...prev, resume: true }));
+    try {
+      const extractedText = await uploadService.uploadResume(file);
+      setResumeText(extractedText);
+      toast.success('Resume uploaded successfully!', {
+        icon: '📄',
+        style: {
+          borderRadius: '10px',
+          background: '#333',
+          color: '#fff',
+        }
+      });
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to upload resume');
+      throw error;
+    } finally {
+      setIsUploading(prev => ({ ...prev, resume: false }));
+    }
+  };
+
+  const handleJobUpload = async (file: File) => {
+    setIsUploading(prev => ({ ...prev, job: true }));
+    try {
+      const extractedText = await uploadService.uploadJobDescription(file);
+      setJobDescription(extractedText);
+      toast.success('Job description uploaded successfully!', {
+        icon: '💼',
+        style: {
+          borderRadius: '10px',
+          background: '#333',
+          color: '#fff',
+        }
+      });
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to upload job description');
+      throw error;
+    } finally {
+      setIsUploading(prev => ({ ...prev, job: false }));
+    }
+  };
   
   const handleAnalyze = async () => {
     await analyzeResume();
@@ -71,173 +121,327 @@ export const InputForm: React.FC = () => {
   const loadSampleData = () => {
     setResumeText(sampleData.resume);
     setJobDescription(sampleData.jobDescription);
-    toast.success('Sample data loaded!', { icon: '📝' });
+    toast.success('Sample data loaded!', { 
+      icon: '✨',
+      style: {
+        borderRadius: '10px',
+        background: '#333',
+        color: '#fff',
+      }
+    });
   };
   
   const clearAll = () => {
     setResumeText('');
     setJobDescription('');
-    toast.success('Fields cleared', { icon: '🗑️' });
+    toast.success('All fields cleared', { 
+      icon: '🧹',
+      style: {
+        borderRadius: '10px',
+        background: '#333',
+        color: '#fff',
+      }
+    });
   };
   
   const isValid = resumeText.length >= 50 && jobDescription.length >= 50;
   
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-6">
-      {/* Info Bar */}
-      <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="flex items-start sm:items-center gap-2">
-            <LightBulbIcon className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 sm:mt-0" />
-            <p className="text-sm text-gray-700 dark:text-gray-300">
-              Paste your resume and job description below for AI-powered analysis
-            </p>
-          </div>
-          <div className="flex gap-2 flex-wrap">
-            <button
-              onClick={loadSampleData}
-              className="px-3 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
-            >
-              <DocumentDuplicateIcon className="inline h-4 w-4 mr-1" />
-              Load Sample
-            </button>
-            <button
-              onClick={clearAll}
-              disabled={!resumeText && !jobDescription}
-              className="px-3 py-1.5 text-sm bg-white dark:bg-gray-800 text-red-600 dark:text-red-400 rounded border border-gray-300 dark:border-gray-600 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50"
-            >
-              <TrashIcon className="inline h-4 w-4 mr-1" />
-              Clear All
-            </button>
-          </div>
-        </div>
-      </div>
-      
-      {/* Input Grid */}
-      <div className="grid lg:grid-cols-2 gap-6">
-        {/* Resume Input */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
-          <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <DocumentTextIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                <h3 className="font-semibold text-gray-900 dark:text-white">Your Resume</h3>
-              </div>
-              {resumeText && (
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(resumeText);
-                    toast.success('Copied!');
-                  }}
-                  className="text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-                >
-                  Copy
-                </button>
-              )}
-            </div>
-          </div>
-          <div className="p-4">
-            <textarea
-              value={resumeText}
-              onChange={(e) => setResumeText(e.target.value)}
-              placeholder="Paste your resume here..."
-              className="w-full h-64 p-3 text-sm font-mono bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-              spellCheck={false}
-            />
-            <div className="mt-2 flex items-center justify-between">
-              <span className={`text-xs ${resumeText.length < 50 ? 'text-red-500' : 'text-gray-500'}`}>
-                {resumeText.length} characters (min: 50)
-              </span>
-              {resumeText.length >= 50 && (
-                <span className="text-xs text-green-600 dark:text-green-400">✓ Valid</span>
-              )}
-            </div>
-          </div>
+      {/* Premium Header with Glassmorphism */}
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-8 text-center relative"
+      >
+        {/* Animated Background Gradient */}
+        <div className="absolute inset-0 -z-10">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-pink-600/20 blur-3xl animate-gradient" />
         </div>
         
-        {/* Job Description Input */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
-          <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <BriefcaseIcon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                <h3 className="font-semibold text-gray-900 dark:text-white">Job Description</h3>
-              </div>
-              {jobDescription && (
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(jobDescription);
-                    toast.success('Copied!');
-                  }}
-                  className="text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-                >
-                  Copy
-                </button>
-              )}
-            </div>
-          </div>
-          <div className="p-4">
-            <textarea
-              value={jobDescription}
-              onChange={(e) => setJobDescription(e.target.value)}
-              placeholder="Paste the job description here..."
-              className="w-full h-64 p-3 text-sm font-mono bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
-              spellCheck={false}
-            />
-            <div className="mt-2 flex items-center justify-between">
-              <span className={`text-xs ${jobDescription.length < 50 ? 'text-red-500' : 'text-gray-500'}`}>
-                {jobDescription.length} characters (min: 50)
-              </span>
-              {jobDescription.length >= 50 && (
-                <span className="text-xs text-green-600 dark:text-green-400">✓ Valid</span>
-              )}
-            </div>
-          </div>
+        <motion.h1 
+          className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-3"
+          animate={{ 
+            backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+          }}
+          transition={{ duration: 5, repeat: Infinity, ease: 'linear' }}
+        >
+          AI-Powered Resume Analysis
+        </motion.h1>
+        <p className="text-gray-600 dark:text-gray-400 text-lg">
+          Upload or paste your documents for instant AI insights
+        </p>
+      </motion.div>
+
+      {/* Mode Switcher with Glassmorphism */}
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="mb-6 flex justify-center"
+      >
+        <div className="inline-flex p-1 rounded-2xl backdrop-blur-xl bg-white/30 dark:bg-gray-900/30 border border-white/20 dark:border-gray-700/30 shadow-2xl">
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setInputMode('upload')}
+            className={`px-6 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${
+              inputMode === 'upload'
+                ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+            }`}
+          >
+            <CloudArrowUpIcon className="inline h-4 w-4 mr-2" />
+            Upload Files
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setInputMode('manual')}
+            className={`px-6 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${
+              inputMode === 'manual'
+                ? 'bg-gradient-to-r from-green-500 to-teal-500 text-white shadow-lg'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+            }`}
+          >
+            <PencilSquareIcon className="inline h-4 w-4 mr-2" />
+            Manual Input
+          </motion.button>
         </div>
-      </div>
-      
-      {/* Analyze Button */}
-      <div className="mt-6 flex justify-center">
-        <button
+      </motion.div>
+
+      {/* Action Buttons */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-6 flex justify-center gap-3"
+      >
+        <motion.button
+          whileHover={{ scale: 1.05, y: -2 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={loadSampleData}
+          className="px-4 py-2 rounded-xl backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 border border-white/20 dark:border-gray-700/30 shadow-xl hover:shadow-2xl transition-all duration-300"
+        >
+          <DocumentDuplicateIcon className="inline h-4 w-4 mr-2 text-blue-500" />
+          <span className="text-sm font-medium">Load Sample</span>
+        </motion.button>
+        <motion.button
+          whileHover={{ scale: 1.05, y: -2 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={clearAll}
+          disabled={!resumeText && !jobDescription}
+          className="px-4 py-2 rounded-xl backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 border border-white/20 dark:border-gray-700/30 shadow-xl hover:shadow-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <TrashIcon className="inline h-4 w-4 mr-2 text-red-500" />
+          <span className="text-sm font-medium">Clear All</span>
+        </motion.button>
+      </motion.div>
+
+      {/* Main Content Area */}
+      <AnimatePresence mode="wait">
+        {inputMode === 'upload' ? (
+          <motion.div
+            key="upload"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            className="grid lg:grid-cols-2 gap-6"
+          >
+            <FileUpload
+              label="Upload Your Resume"
+              type="resume"
+              onFileSelect={handleResumeUpload}
+              onTextExtracted={setResumeText}
+              maxSize={10}
+            />
+            <FileUpload
+              label="Upload Job Description"
+              type="job"
+              onFileSelect={handleJobUpload}
+              onTextExtracted={setJobDescription}
+              maxSize={5}
+            />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="manual"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="grid lg:grid-cols-2 gap-6"
+          >
+            {/* Resume Text Input with Glassmorphism */}
+            <motion.div 
+              whileHover={{ scale: 1.01 }}
+              className="relative backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 rounded-2xl shadow-2xl border border-white/20 dark:border-gray-700/30 overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10" />
+              <div className="relative p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500">
+                      <DocumentTextIcon className="h-5 w-5 text-white" />
+                    </div>
+                    <h3 className="font-semibold text-gray-900 dark:text-white">Your Resume</h3>
+                  </div>
+                  {resumeText && (
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => {
+                        navigator.clipboard.writeText(resumeText);
+                        toast.success('Copied!');
+                      }}
+                      className="text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                    >
+                      Copy
+                    </motion.button>
+                  )}
+                </div>
+                <textarea
+                  value={resumeText}
+                  onChange={(e) => setResumeText(e.target.value)}
+                  placeholder="Paste your resume here..."
+                  className="w-full h-64 p-4 text-sm font-mono bg-white/50 dark:bg-gray-900/50 backdrop-blur border border-gray-200/50 dark:border-gray-700/50 rounded-xl focus:ring-2 focus:ring-blue-500/50 focus:border-transparent resize-none transition-all duration-300"
+                  spellCheck={false}
+                />
+                <div className="mt-3 flex items-center justify-between">
+                  <span className={`text-xs ${resumeText.length < 50 ? 'text-red-500' : 'text-gray-500'}`}>
+                    {resumeText.length} characters (min: 50)
+                  </span>
+                  {resumeText.length >= 50 && (
+                    <motion.span 
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="text-xs text-green-600 dark:text-green-400 font-medium"
+                    >
+                      ✓ Valid
+                    </motion.span>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Job Description Text Input with Glassmorphism */}
+            <motion.div 
+              whileHover={{ scale: 1.01 }}
+              className="relative backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 rounded-2xl shadow-2xl border border-white/20 dark:border-gray-700/30 overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-teal-500/10" />
+              <div className="relative p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 rounded-lg bg-gradient-to-r from-green-500 to-teal-500">
+                      <BriefcaseIcon className="h-5 w-5 text-white" />
+                    </div>
+                    <h3 className="font-semibold text-gray-900 dark:text-white">Job Description</h3>
+                  </div>
+                  {jobDescription && (
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => {
+                        navigator.clipboard.writeText(jobDescription);
+                        toast.success('Copied!');
+                      }}
+                      className="text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                    >
+                      Copy
+                    </motion.button>
+                  )}
+                </div>
+                <textarea
+                  value={jobDescription}
+                  onChange={(e) => setJobDescription(e.target.value)}
+                  placeholder="Paste the job description here..."
+                  className="w-full h-64 p-4 text-sm font-mono bg-white/50 dark:bg-gray-900/50 backdrop-blur border border-gray-200/50 dark:border-gray-700/50 rounded-xl focus:ring-2 focus:ring-green-500/50 focus:border-transparent resize-none transition-all duration-300"
+                  spellCheck={false}
+                />
+                <div className="mt-3 flex items-center justify-between">
+                  <span className={`text-xs ${jobDescription.length < 50 ? 'text-red-500' : 'text-gray-500'}`}>
+                    {jobDescription.length} characters (min: 50)
+                  </span>
+                  {jobDescription.length >= 50 && (
+                    <motion.span 
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="text-xs text-green-600 dark:text-green-400 font-medium"
+                    >
+                      ✓ Valid
+                    </motion.span>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Status Indicators */}
+      {(resumeText || jobDescription) && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mt-6 flex justify-center gap-4"
+        >
+          <div className={`px-4 py-2 rounded-xl backdrop-blur-xl ${
+            resumeText ? 'bg-green-500/20 border border-green-500/30' : 'bg-gray-500/20 border border-gray-500/30'
+          }`}>
+            <span className="text-sm font-medium">
+              {resumeText ? '✓ Resume Ready' : '○ Resume Required'}
+            </span>
+          </div>
+          <div className={`px-4 py-2 rounded-xl backdrop-blur-xl ${
+            jobDescription ? 'bg-green-500/20 border border-green-500/30' : 'bg-gray-500/20 border border-gray-500/30'
+          }`}>
+            <span className="text-sm font-medium">
+              {jobDescription ? '✓ Job Description Ready' : '○ Job Description Required'}
+            </span>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Analyze Button with Premium Effects */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mt-8 flex justify-center"
+      >
+        <motion.button
+          whileHover={{ scale: 1.05, y: -3 }}
+          whileTap={{ scale: 0.95 }}
           onClick={handleAnalyze}
           disabled={!isValid || isAnalyzing}
-          className={`px-6 py-3 rounded-lg font-semibold text-white transition-all ${
+          className={`relative px-8 py-4 rounded-2xl font-bold text-white transition-all duration-300 ${
             isValid && !isAnalyzing 
-              ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg' 
-              : 'bg-gray-400 cursor-not-allowed'
+              ? 'bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 shadow-2xl hover:shadow-3xl' 
+              : 'bg-gray-400 cursor-not-allowed opacity-50'
           }`}
+          style={{
+            backgroundSize: '200% 200%',
+            animation: isValid && !isAnalyzing ? 'gradient 3s ease infinite' : 'none'
+          }}
         >
-          {isAnalyzing ? (
-            <span className="flex items-center gap-2">
-              <span className="inline-block h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-              Analyzing...
-            </span>
-          ) : (
-            <span className="flex items-center gap-2">
-              <SparklesIcon className="h-5 w-5" />
-              Analyze Match
-              <ArrowRightIcon className="h-4 w-4" />
-            </span>
+          {/* Glow Effect */}
+          {isValid && !isAnalyzing && (
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
           )}
-        </button>
-      </div>
-      
-      {/* Tips */}
-      <div className="mt-6 grid md:grid-cols-3 gap-4">
-        {[
-          { emoji: '📝', title: 'Complete Resume', desc: 'Include all skills and experience' },
-          { emoji: '🎯', title: 'Full Job Description', desc: 'Paste the complete JD' },
-          { emoji: '✨', title: 'AI Analysis', desc: 'Get instant insights' }
-        ].map((tip, index) => (
-          <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-            <span className="text-xl mt-0.5">{tip.emoji}</span>
-            <div>
-              <h4 className="text-sm font-semibold text-gray-900 dark:text-white">{tip.title}</h4>
-              <p className="text-xs text-gray-600 dark:text-gray-400">{tip.desc}</p>
-            </div>
-          </div>
-        ))}
-      </div>
+          
+          <span className="relative flex items-center gap-2">
+            {isAnalyzing ? (
+              <>
+                <ArrowPathIcon className="h-5 w-5 animate-spin" />
+                Analyzing...
+              </>
+            ) : (
+              <>
+                <SparklesIcon className="h-5 w-5" />
+                Analyze Match
+                <ArrowRightIcon className="h-4 w-4" />
+              </>
+            )}
+          </span>
+        </motion.button>
+      </motion.div>
     </div>
   );
 };

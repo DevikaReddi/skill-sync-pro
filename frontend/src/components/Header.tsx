@@ -1,69 +1,280 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   SunIcon, 
   MoonIcon,
-  CodeBracketIcon
+  CodeBracketIcon,
+  SparklesIcon,
+  ChartBarIcon,
+  UserCircleIcon,
+  Cog6ToothIcon,
+  ArrowRightOnRectangleIcon,
+  DocumentTextIcon
 } from '@heroicons/react/24/outline';
 import { useUIStore } from '../store/uiStore';
+import { useAuthStore } from '../store/authStore';
 
 export const Header: React.FC = () => {
   const { isDarkMode, toggleDarkMode } = useUIStore();
-  
+  const { user, isAuthenticated, logout } = useAuthStore();
+  const [scrolled, setScrolled] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      clearInterval(timer);
+    };
+  }, []);
+
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: true 
+    });
+  };
+
   return (
-    <header className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800">
+    <motion.header 
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      className={`
+        sticky top-0 z-50 transition-all duration-500
+        ${scrolled 
+          ? 'backdrop-blur-2xl bg-white/70 dark:bg-gray-900/70 shadow-2xl' 
+          : 'backdrop-blur-xl bg-white/50 dark:bg-gray-900/50'
+        }
+        border-b border-white/20 dark:border-gray-800/30
+      `}
+    >
+      {/* Premium Gradient Line */}
+      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 animate-gradient" />
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo and Title */}
+          {/* Logo Section with Premium Effects */}
           <motion.div 
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="flex items-center space-x-3"
+            className="flex items-center space-x-4"
           >
-            <div className="relative flex-shrink-0">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg blur-lg opacity-50"></div>
-              <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 p-2 rounded-lg">
-                <CodeBracketIcon className="h-6 w-6 text-white flex-shrink-0" />
+            {/* Animated Logo */}
+            <motion.div 
+              whileHover={{ scale: 1.05, rotate: 5 }}
+              whileTap={{ scale: 0.95 }}
+              className="relative group cursor-pointer"
+            >
+              {/* Glow Effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
+              
+              {/* Logo Container */}
+              <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 p-2.5 rounded-xl shadow-lg">
+                <motion.div
+                  animate={{ rotate: [0, 360] }}
+                  transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                >
+                  <CodeBracketIcon className="h-6 w-6 text-white" />
+                </motion.div>
               </div>
-            </div>
+
+              {/* Floating Particles */}
+              {[...Array(3)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  className="absolute h-1 w-1 bg-purple-400 rounded-full"
+                  animate={{
+                    y: [-10, -30, -10],
+                    x: [0, (i - 1) * 10, 0],
+                    opacity: [0, 1, 0],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    delay: i * 0.3,
+                  }}
+                  style={{
+                    left: '50%',
+                    top: '50%',
+                  }}
+                />
+              ))}
+            </motion.div>
+
+            {/* Brand Name with Gradient */}
             <div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <motion.h1 
+                className="text-xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent"
+                animate={{ 
+                  backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+                }}
+                transition={{ duration: 5, repeat: Infinity, ease: 'linear' }}
+                style={{ backgroundSize: '200% 200%' }}
+              >
                 SkillSync Pro
-              </h1>
-              <p className="text-xs text-gray-500 dark:text-gray-400">AI-Powered Resume Analyzer</p>
+              </motion.h1>
+              <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center">
+                <SparklesIcon className="h-3 w-3 mr-1 text-purple-500" />
+                AI-Powered Analysis Platform
+              </p>
             </div>
           </motion.div>
           
-          {/* Right Section */}
-          <div className="flex items-center space-x-4">
-            {/* Status Badge */}
+          {/* Center Section - Time Display (Premium) */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="hidden md:flex items-center space-x-4"
+          >
+            <div className="px-4 py-1.5 rounded-xl backdrop-blur-xl bg-white/30 dark:bg-gray-800/30 border border-white/20 dark:border-gray-700/30">
+              <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                {formatTime(currentTime)}
+              </span>
+            </div>
+            
+            {/* Status Badge with Pulse */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
-              className="hidden sm:flex items-center px-3 py-1 bg-green-100 dark:bg-green-900/30 rounded-full"
+              className="flex items-center px-3 py-1.5 rounded-xl backdrop-blur-xl bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30"
             >
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse mr-2 flex-shrink-0"></div>
-              <span className="text-xs font-medium text-green-700 dark:text-green-400">AI Ready</span>
+              <motion.div
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="w-2 h-2 bg-gradient-to-r from-green-400 to-emerald-400 rounded-full mr-2"
+              />
+              <span className="text-xs font-medium text-green-700 dark:text-green-400">
+                AI Ready
+              </span>
             </motion.div>
-            
-            {/* Dark Mode Toggle */}
+          </motion.div>
+
+          {/* Right Section with Premium Controls */}
+          <div className="flex items-center space-x-3">
+            {/* Quick Stats (if authenticated) */}
+            {isAuthenticated && (
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="hidden sm:flex items-center px-3 py-1.5 rounded-xl backdrop-blur-xl bg-white/30 dark:bg-gray-800/30 border border-white/20 dark:border-gray-700/30"
+              >
+                <ChartBarIcon className="h-4 w-4 text-purple-500 mr-2" />
+                <span className="text-xs font-medium">3 Analyses Today</span>
+              </motion.div>
+            )}
+
+            {/* Dark Mode Toggle with Premium Animation */}
             <motion.button
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.3 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={toggleDarkMode}
-              className="relative p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200 group"
+              className="relative p-2.5 rounded-xl backdrop-blur-xl bg-white/30 dark:bg-gray-800/30 border border-white/20 dark:border-gray-700/30 group overflow-hidden"
               aria-label="Toggle dark mode"
             >
+              {/* Sliding Background */}
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-orange-400/20 dark:from-blue-400/20 dark:to-purple-400/20"
+                initial={{ x: '-100%' }}
+                whileHover={{ x: 0 }}
+                transition={{ duration: 0.3 }}
+              />
+              
+              {/* Icons with Rotation */}
               <div className="relative w-5 h-5">
-                <SunIcon className={`absolute inset-0 h-5 w-5 text-yellow-500 transition-all duration-300 ${isDarkMode ? 'opacity-0 rotate-180' : 'opacity-100 rotate-0'}`} />
-                <MoonIcon className={`absolute inset-0 h-5 w-5 text-blue-500 transition-all duration-300 ${isDarkMode ? 'opacity-100 rotate-0' : 'opacity-0 -rotate-180'}`} />
+                <motion.div
+                  animate={{ rotate: isDarkMode ? 180 : 0 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <SunIcon className={`absolute inset-0 h-5 w-5 text-yellow-500 transition-all duration-500 ${
+                    isDarkMode ? 'opacity-0 scale-50' : 'opacity-100 scale-100'
+                  }`} />
+                  <MoonIcon className={`absolute inset-0 h-5 w-5 text-blue-500 transition-all duration-500 ${
+                    isDarkMode ? 'opacity-100 scale-100' : 'opacity-0 scale-50'
+                  }`} />
+                </motion.div>
               </div>
             </motion.button>
+
+            {/* User Menu with Glassmorphism */}
+            {isAuthenticated ? (
+              <div className="relative">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="flex items-center space-x-2 p-2 rounded-xl backdrop-blur-xl bg-white/30 dark:bg-gray-800/30 border border-white/20 dark:border-gray-700/30 hover:bg-white/40 dark:hover:bg-gray-800/40"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
+                    <UserCircleIcon className="h-5 w-5 text-white" />
+                  </div>
+                  <span className="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {user?.username || 'User'}
+                  </span>
+                </motion.button>
+
+                {/* Dropdown Menu */}
+                <AnimatePresence>
+                  {showUserMenu && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                      className="absolute right-0 mt-2 w-48 rounded-xl backdrop-blur-xl bg-white/90 dark:bg-gray-900/90 border border-white/20 dark:border-gray-700/30 shadow-2xl overflow-hidden"
+                    >
+                      <div className="p-2">
+                        <motion.button
+                          whileHover={{ x: 5 }}
+                          className="flex items-center w-full px-3 py-2 text-sm rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors"
+                        >
+                          <DocumentTextIcon className="h-4 w-4 mr-2 text-blue-500" />
+                          My Analyses
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ x: 5 }}
+                          className="flex items-center w-full px-3 py-2 text-sm rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors"
+                        >
+                          <Cog6ToothIcon className="h-4 w-4 mr-2 text-gray-500" />
+                          Settings
+                        </motion.button>
+                        <hr className="my-2 border-gray-200/50 dark:border-gray-700/50" />
+                        <motion.button
+                          whileHover={{ x: 5 }}
+                          onClick={logout}
+                          className="flex items-center w-full px-3 py-2 text-sm rounded-lg hover:bg-red-100/50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 transition-colors"
+                        >
+                          <ArrowRightOnRectangleIcon className="h-4 w-4 mr-2" />
+                          Logout
+                        </motion.button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm font-medium shadow-lg hover:shadow-xl transition-all"
+              >
+                Sign In
+              </motion.button>
+            )}
           </div>
         </div>
       </div>
-    </header>
+
+      {/* Premium Bottom Gradient Shadow */}
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent" />
+    </motion.header>
   );
 };
