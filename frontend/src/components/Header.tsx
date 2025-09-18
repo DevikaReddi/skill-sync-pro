@@ -175,6 +175,19 @@ export const Header: React.FC = () => {
           {/* Right Section with Premium Controls */}
           <div className="flex items-center space-x-3">
 
+            <motion.button
+              whileHover={{ x: 5 }}
+              onClick={() => {
+                setDashboardView('analyses');
+                setShowDashboard(true);
+                setShowUserMenu(false);
+              }}
+              className="flex items-center w-full px-3 py-2 text-sm rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors"
+            >
+              <DocumentTextIcon className="h-4 w-4 mr-2 text-blue-500" />
+              My Analyses
+            </motion.button>
+
             {/* Dark Mode Toggle with Premium Animation */}
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -234,20 +247,6 @@ export const Header: React.FC = () => {
                       className="absolute right-0 mt-2 w-48 rounded-xl backdrop-blur-xl bg-white/90 dark:bg-gray-900/90 border border-white/20 dark:border-gray-700/30 shadow-2xl overflow-hidden"
                     >
                       <div className="p-2">
-                        <motion.button
-                          whileHover={{ x: 5 }}
-                          onClick={() => {
-                            setDashboardView('analyses');
-                            setShowDashboard(true);
-                            setShowUserMenu(false);
-                          }}
-                          className="flex items-center w-full px-3 py-2 text-sm rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors"
-                        >
-                          <DocumentTextIcon className="h-4 w-4 mr-2 text-blue-500" />
-                          My Analyses
-                        </motion.button>
-
-                        <hr className="my-2 border-gray-200/50 dark:border-gray-700/50" />
                         <motion.button
                           whileHover={{ x: 5 }}
                           onClick={logout}

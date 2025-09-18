@@ -91,14 +91,19 @@ export const UserDashboard: React.FC<DashboardModalProps> = ({
       await loadDashboardData();
     }
   };
+    type Settings = {
+    emailNotifications: boolean;
+    weeklyReports: boolean;
+    autoSave: boolean;
+    };
 
-  const handleSettingChange = (key: string) => {
-    setSettings(prev => ({
-      ...prev,
-      [key]: !prev[key]
+    const handleSetSetting = (key: keyof Settings) => {
+    setSettings((prev) => ({
+        ...prev,
+        [key]: !prev[key],
     }));
-    toast.success('Settings updated');
-  };
+    toast.success("Settings updated");
+    };
 
   if (!isOpen) return null;
 
@@ -145,22 +150,6 @@ export const UserDashboard: React.FC<DashboardModalProps> = ({
               </motion.button>
             </div>
 
-            {/* Tab Navigation */}
-            <div className="flex gap-2">
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setActiveTab('analyses')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${
-                  activeTab === 'analyses'
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg'
-                    : 'bg-white/50 dark:bg-gray-800/50 text-gray-600 dark:text-gray-400'
-                }`}
-              >
-                <DocumentTextIcon className="h-4 w-4" />
-                Analysis History
-              </motion.button>
-            </div>
           </div>
 
           {/* Content Area with Scroll */}
@@ -335,7 +324,6 @@ export const UserDashboard: React.FC<DashboardModalProps> = ({
                         <motion.button
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
-                          onClick={() => handleSettingChange(key)}
                           className={`w-12 h-6 rounded-full p-1 transition-colors ${
                             settings[key as keyof typeof settings]
                               ? 'bg-gradient-to-r from-blue-500 to-purple-500' 
