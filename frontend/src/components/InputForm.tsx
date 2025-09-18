@@ -7,10 +7,9 @@ import {
   ArrowRightIcon,
   DocumentDuplicateIcon,
   TrashIcon,
-  LightBulbIcon,
   CloudArrowUpIcon,
   PencilSquareIcon,
-  ArrowPathIcon
+  ArrowsRightLeftIcon,
 } from '@heroicons/react/24/outline';
 import { useAnalysisStore } from '../store/analysisStore';
 import { useUIStore } from '../store/uiStore';
@@ -53,7 +52,13 @@ REQUIREMENTS:
 - Knowledge of CI/CD pipelines and DevOps practices`
 };
 
+// Individual input modes for each field
 type InputMode = 'upload' | 'manual';
+
+interface InputModes {
+  resume: InputMode;
+  job: InputMode;
+}
 
 export const InputForm: React.FC = () => {
   const { 
@@ -66,8 +71,25 @@ export const InputForm: React.FC = () => {
   } = useAnalysisStore();
   
   const { setActiveTab } = useUIStore();
-  const [inputMode, setInputMode] = useState<InputMode>('upload');
+  const [inputModes, setInputModes] = useState<InputModes>({
+    resume: 'upload',
+    job: 'upload'
+  });
   const [isUploading, setIsUploading] = useState({ resume: false, job: false });
+  
+  const toggleResumeMode = () => {
+    setInputModes(prev => ({
+      ...prev,
+      resume: prev.resume === 'upload' ? 'manual' : 'upload'
+    }));
+  };
+  
+  const toggleJobMode = () => {
+    setInputModes(prev => ({
+      ...prev,
+      job: prev.job === 'upload' ? 'manual' : 'upload'
+    }));
+  };
   
   const handleResumeUpload = async (file: File) => {
     setIsUploading(prev => ({ ...prev, resume: true }));
@@ -121,6 +143,8 @@ export const InputForm: React.FC = () => {
   const loadSampleData = () => {
     setResumeText(sampleData.resume);
     setJobDescription(sampleData.jobDescription);
+    // Switch both to manual mode to show the loaded text
+    setInputModes({ resume: 'manual', job: 'manual' });
     toast.success('Sample data loaded!', { 
       icon: '✨',
       style: {
@@ -148,13 +172,12 @@ export const InputForm: React.FC = () => {
   
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-6">
-      {/* Premium Header with Glassmorphism */}
+      {/* Premium Header */}
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         className="mb-8 text-center relative"
       >
-        {/* Animated Background Gradient */}
         <div className="absolute inset-0 -z-10">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-pink-600/20 blur-3xl animate-gradient" />
         </div>
@@ -171,42 +194,6 @@ export const InputForm: React.FC = () => {
         <p className="text-gray-600 dark:text-gray-400 text-lg">
           Upload or paste your documents for instant AI insights
         </p>
-      </motion.div>
-
-      {/* Mode Switcher with Glassmorphism */}
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="mb-6 flex justify-center"
-      >
-        <div className="inline-flex p-1 rounded-2xl backdrop-blur-xl bg-white/30 dark:bg-gray-900/30 border border-white/20 dark:border-gray-700/30 shadow-2xl">
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setInputMode('upload')}
-            className={`px-6 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${
-              inputMode === 'upload'
-                ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-            }`}
-          >
-            <CloudArrowUpIcon className="inline h-4 w-4 mr-2" />
-            Upload Files
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setInputMode('manual')}
-            className={`px-6 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${
-              inputMode === 'manual'
-                ? 'bg-gradient-to-r from-green-500 to-teal-500 text-white shadow-lg'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-            }`}
-          >
-            <PencilSquareIcon className="inline h-4 w-4 mr-2" />
-            Manual Input
-          </motion.button>
-        </div>
       </motion.div>
 
       {/* Action Buttons */}
@@ -236,145 +223,154 @@ export const InputForm: React.FC = () => {
         </motion.button>
       </motion.div>
 
-      {/* Main Content Area */}
-      <AnimatePresence mode="wait">
-        {inputMode === 'upload' ? (
-          <motion.div
-            key="upload"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 20 }}
-            className="grid lg:grid-cols-2 gap-6"
-          >
-            <FileUpload
-              label="Upload Your Resume"
-              type="resume"
-              onFileSelect={handleResumeUpload}
-              onTextExtracted={setResumeText}
-              maxSize={10}
-            />
-            <FileUpload
-              label="Upload Job Description"
-              type="job"
-              onFileSelect={handleJobUpload}
-              onTextExtracted={setJobDescription}
-              maxSize={5}
-            />
-          </motion.div>
-        ) : (
-          <motion.div
-            key="manual"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="grid lg:grid-cols-2 gap-6"
-          >
-            {/* Resume Text Input with Glassmorphism */}
-            <motion.div 
-              whileHover={{ scale: 1.01 }}
-              className="relative backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 rounded-2xl shadow-2xl border border-white/20 dark:border-gray-700/30 overflow-hidden"
+      {/* Main Input Grid with Mixed Mode Support */}
+      <div className="grid lg:grid-cols-2 gap-6">
+        {/* Resume Input */}
+        <div className="space-y-3">
+          {/* Mode Toggle for Resume */}
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+              <DocumentTextIcon className="h-5 w-5 mr-2 text-blue-500" />
+              Your Resume
+            </h3>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={toggleResumeMode}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 text-sm font-medium"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10" />
-              <div className="relative p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <div className="p-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500">
-                      <DocumentTextIcon className="h-5 w-5 text-white" />
-                    </div>
-                    <h3 className="font-semibold text-gray-900 dark:text-white">Your Resume</h3>
-                  </div>
-                  {resumeText && (
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={() => {
-                        navigator.clipboard.writeText(resumeText);
-                        toast.success('Copied!');
-                      }}
-                      className="text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-                    >
-                      Copy
-                    </motion.button>
-                  )}
-                </div>
-                <textarea
-                  value={resumeText}
-                  onChange={(e) => setResumeText(e.target.value)}
-                  placeholder="Paste your resume here..."
-                  className="w-full h-64 p-4 text-sm font-mono bg-white/50 dark:bg-gray-900/50 backdrop-blur border border-gray-200/50 dark:border-gray-700/50 rounded-xl focus:ring-2 focus:ring-blue-500/50 focus:border-transparent resize-none transition-all duration-300"
-                  spellCheck={false}
-                />
-                <div className="mt-3 flex items-center justify-between">
-                  <span className={`text-xs ${resumeText.length < 50 ? 'text-red-500' : 'text-gray-500'}`}>
-                    {resumeText.length} characters (min: 50)
-                  </span>
-                  {resumeText.length >= 50 && (
-                    <motion.span 
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      className="text-xs text-green-600 dark:text-green-400 font-medium"
-                    >
-                      ✓ Valid
-                    </motion.span>
-                  )}
-                </div>
-              </div>
-            </motion.div>
+              <ArrowsRightLeftIcon  className="h-4 w-4" />
+              {inputModes.resume === 'upload' ? 'Switch to Text' : 'Switch to Upload'}
+            </motion.button>
+          </div>
 
-            {/* Job Description Text Input with Glassmorphism */}
-            <motion.div 
-              whileHover={{ scale: 1.01 }}
-              className="relative backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 rounded-2xl shadow-2xl border border-white/20 dark:border-gray-700/30 overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-teal-500/10" />
-              <div className="relative p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <div className="p-2 rounded-lg bg-gradient-to-r from-green-500 to-teal-500">
-                      <BriefcaseIcon className="h-5 w-5 text-white" />
-                    </div>
-                    <h3 className="font-semibold text-gray-900 dark:text-white">Job Description</h3>
-                  </div>
-                  {jobDescription && (
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={() => {
-                        navigator.clipboard.writeText(jobDescription);
-                        toast.success('Copied!');
-                      }}
-                      className="text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-                    >
-                      Copy
-                    </motion.button>
-                  )}
-                </div>
-                <textarea
-                  value={jobDescription}
-                  onChange={(e) => setJobDescription(e.target.value)}
-                  placeholder="Paste the job description here..."
-                  className="w-full h-64 p-4 text-sm font-mono bg-white/50 dark:bg-gray-900/50 backdrop-blur border border-gray-200/50 dark:border-gray-700/50 rounded-xl focus:ring-2 focus:ring-green-500/50 focus:border-transparent resize-none transition-all duration-300"
-                  spellCheck={false}
+          {/* Conditional Input */}
+          <AnimatePresence mode="wait">
+            {inputModes.resume === 'upload' ? (
+              <motion.div
+                key="resume-upload"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+              >
+                <FileUpload
+                  label=""
+                  type="resume"
+                  onFileSelect={handleResumeUpload}
+                  onTextExtracted={setResumeText}
+                  maxSize={10}
                 />
-                <div className="mt-3 flex items-center justify-between">
-                  <span className={`text-xs ${jobDescription.length < 50 ? 'text-red-500' : 'text-gray-500'}`}>
-                    {jobDescription.length} characters (min: 50)
-                  </span>
-                  {jobDescription.length >= 50 && (
-                    <motion.span 
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      className="text-xs text-green-600 dark:text-green-400 font-medium"
-                    >
-                      ✓ Valid
-                    </motion.span>
-                  )}
+              </motion.div>
+            ) : (
+              <motion.div
+                key="resume-text"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="relative backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 rounded-2xl shadow-2xl border border-white/20 dark:border-gray-700/30 overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10" />
+                <div className="relative p-6">
+                  <textarea
+                    value={resumeText}
+                    onChange={(e) => setResumeText(e.target.value)}
+                    placeholder="Paste your resume here..."
+                    className="w-full h-64 p-4 text-sm font-mono bg-white/50 dark:bg-gray-900/50 backdrop-blur border border-gray-200/50 dark:border-gray-700/50 rounded-xl focus:ring-2 focus:ring-blue-500/50 focus:border-transparent resize-none transition-all duration-300"
+                    spellCheck={false}
+                  />
+                  <div className="mt-3 flex items-center justify-between">
+                    <span className={`text-xs ${resumeText.length < 50 ? 'text-red-500' : 'text-gray-500'}`}>
+                      {resumeText.length} characters (min: 50)
+                    </span>
+                    {resumeText.length >= 50 && (
+                      <motion.span 
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="text-xs text-green-600 dark:text-green-400 font-medium"
+                      >
+                        ✓ Valid
+                      </motion.span>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Job Description Input */}
+        <div className="space-y-3">
+          {/* Mode Toggle for Job Description */}
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+              <BriefcaseIcon className="h-5 w-5 mr-2 text-green-500" />
+              Job Description
+            </h3>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={toggleJobMode}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-green-500/10 to-teal-500/10 border border-green-500/20 text-sm font-medium"
+            >
+              <ArrowsRightLeftIcon  className="h-4 w-4" />
+              {inputModes.job === 'upload' ? 'Switch to Text' : 'Switch to Upload'}
+            </motion.button>
+          </div>
+
+          {/* Conditional Input */}
+          <AnimatePresence mode="wait">
+            {inputModes.job === 'upload' ? (
+              <motion.div
+                key="job-upload"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+              >
+                <FileUpload
+                  label=""
+                  type="job"
+                  onFileSelect={handleJobUpload}
+                  onTextExtracted={setJobDescription}
+                  maxSize={5}
+                />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="job-text"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="relative backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 rounded-2xl shadow-2xl border border-white/20 dark:border-gray-700/30 overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-teal-500/10" />
+                <div className="relative p-6">
+                  <textarea
+                    value={jobDescription}
+                    onChange={(e) => setJobDescription(e.target.value)}
+                    placeholder="Paste the job description here..."
+                    className="w-full h-64 p-4 text-sm font-mono bg-white/50 dark:bg-gray-900/50 backdrop-blur border border-gray-200/50 dark:border-gray-700/50 rounded-xl focus:ring-2 focus:ring-green-500/50 focus:border-transparent resize-none transition-all duration-300"
+                    spellCheck={false}
+                  />
+                  <div className="mt-3 flex items-center justify-between">
+                    <span className={`text-xs ${jobDescription.length < 50 ? 'text-red-500' : 'text-gray-500'}`}>
+                      {jobDescription.length} characters (min: 50)
+                    </span>
+                    {jobDescription.length >= 50 && (
+                      <motion.span 
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="text-xs text-green-600 dark:text-green-400 font-medium"
+                      >
+                        ✓ Valid
+                      </motion.span>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
 
       {/* Status Indicators */}
       {(resumeText || jobDescription) && (
@@ -400,7 +396,7 @@ export const InputForm: React.FC = () => {
         </motion.div>
       )}
 
-      {/* Analyze Button with Premium Effects */}
+      {/* Analyze Button */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -421,7 +417,6 @@ export const InputForm: React.FC = () => {
             animation: isValid && !isAnalyzing ? 'gradient 3s ease infinite' : 'none'
           }}
         >
-          {/* Glow Effect */}
           {isValid && !isAnalyzing && (
             <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
           )}
@@ -429,7 +424,11 @@ export const InputForm: React.FC = () => {
           <span className="relative flex items-center gap-2">
             {isAnalyzing ? (
               <>
-                <ArrowPathIcon className="h-5 w-5 animate-spin" />
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+                />
                 Analyzing...
               </>
             ) : (

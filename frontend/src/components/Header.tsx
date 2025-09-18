@@ -11,8 +11,11 @@ import {
   ArrowRightOnRectangleIcon,
   DocumentTextIcon
 } from '@heroicons/react/24/outline';
+import { AuthModal } from './AuthModal';
 import { useUIStore } from '../store/uiStore';
 import { useAuthStore } from '../store/authStore';
+import { UserDashboard } from './UserDashboard';
+import { useAnalysisStore } from '../store/analysisStore';
 
 export const Header: React.FC = () => {
   const { isDarkMode, toggleDarkMode } = useUIStore();
@@ -20,6 +23,10 @@ export const Header: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showDashboard, setShowDashboard] = useState(false);
+  const [dashboardView, setDashboardView] = useState<'analyses' | 'settings'>('analyses');
+  const { todayAnalysisCount, fetchTodayCount } = useAnalysisStore();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -36,6 +43,12 @@ export const Header: React.FC = () => {
       clearInterval(timer);
     };
   }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchTodayCount();
+    }
+  }, [isAuthenticated]);
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('en-US', { 
@@ -161,17 +174,6 @@ export const Header: React.FC = () => {
 
           {/* Right Section with Premium Controls */}
           <div className="flex items-center space-x-3">
-            {/* Quick Stats (if authenticated) */}
-            {isAuthenticated && (
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="hidden sm:flex items-center px-3 py-1.5 rounded-xl backdrop-blur-xl bg-white/30 dark:bg-gray-800/30 border border-white/20 dark:border-gray-700/30"
-              >
-                <ChartBarIcon className="h-4 w-4 text-purple-500 mr-2" />
-                <span className="text-xs font-medium">3 Analyses Today</span>
-              </motion.div>
-            )}
 
             {/* Dark Mode Toggle with Premium Animation */}
             <motion.button
@@ -208,11 +210,11 @@ export const Header: React.FC = () => {
             {/* User Menu with Glassmorphism */}
             {isAuthenticated ? (
               <div className="relative">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex items-center space-x-2 p-2 rounded-xl backdrop-blur-xl bg-white/30 dark:bg-gray-800/30 border border-white/20 dark:border-gray-700/30 hover:bg-white/40 dark:hover:bg-gray-800/40"
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setShowUserMenu(!showUserMenu)}
+                    className="flex items-center space-x-2 p-2 rounded-xl backdrop-blur-xl bg-white/30 dark:bg-gray-800/30 border border-white/20 dark:border-gray-700/30 hover:bg-white/40 dark:hover:bg-gray-800/40"
                 >
                   <div className="h-8 w-8 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
                     <UserCircleIcon className="h-5 w-5 text-white" />
@@ -220,7 +222,7 @@ export const Header: React.FC = () => {
                   <span className="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-300">
                     {user?.username || 'User'}
                   </span>
-                </motion.button>
+                  </motion.button>
 
                 {/* Dropdown Menu */}
                 <AnimatePresence>
@@ -234,18 +236,17 @@ export const Header: React.FC = () => {
                       <div className="p-2">
                         <motion.button
                           whileHover={{ x: 5 }}
+                          onClick={() => {
+                            setDashboardView('analyses');
+                            setShowDashboard(true);
+                            setShowUserMenu(false);
+                          }}
                           className="flex items-center w-full px-3 py-2 text-sm rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors"
                         >
                           <DocumentTextIcon className="h-4 w-4 mr-2 text-blue-500" />
                           My Analyses
                         </motion.button>
-                        <motion.button
-                          whileHover={{ x: 5 }}
-                          className="flex items-center w-full px-3 py-2 text-sm rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors"
-                        >
-                          <Cog6ToothIcon className="h-4 w-4 mr-2 text-gray-500" />
-                          Settings
-                        </motion.button>
+
                         <hr className="my-2 border-gray-200/50 dark:border-gray-700/50" />
                         <motion.button
                           whileHover={{ x: 5 }}
@@ -262,12 +263,13 @@ export const Header: React.FC = () => {
               </div>
             ) : (
               <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm font-medium shadow-lg hover:shadow-xl transition-all"
-              >
-                Sign In
-              </motion.button>
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setShowAuthModal(true)}
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm font-medium shadow-lg hover:shadow-xl transition-all"
+                  >
+                    Sign In
+                  </motion.button>
             )}
           </div>
         </div>
@@ -275,6 +277,12 @@ export const Header: React.FC = () => {
 
       {/* Premium Bottom Gradient Shadow */}
       <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent" />
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
+      <UserDashboard 
+        isOpen={showDashboard} 
+        onClose={() => setShowDashboard(false)}
+        initialView={dashboardView}
+      />
     </motion.header>
   );
 };

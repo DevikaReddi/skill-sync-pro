@@ -5,7 +5,9 @@ import {
   ArrowUpIcon,
   ArrowDownIcon,
   InformationCircleIcon,
-  SparklesIcon
+  SparklesIcon,
+  FunnelIcon,
+  ArrowsUpDownIcon
 } from '@heroicons/react/24/outline';
 import { Skill } from '../types';
 
@@ -26,7 +28,6 @@ export const SkillCard: React.FC<SkillCardProps> = ({
 }) => {
   const [sortBy, setSortBy] = useState<'name' | 'category' | 'relevance'>('relevance');
   const [filterCategory, setFilterCategory] = useState<string>('all');
-  const [expandedSkills, setExpandedSkills] = useState<Set<string>>(new Set());
 
   const colors = {
     green: {
@@ -74,16 +75,6 @@ export const SkillCard: React.FC<SkillCardProps> = ({
     }
   });
 
-  const toggleSkillExpansion = (skillName: string) => {
-    const newExpanded = new Set(expandedSkills);
-    if (newExpanded.has(skillName)) {
-      newExpanded.delete(skillName);
-    } else {
-      newExpanded.add(skillName);
-    }
-    setExpandedSkills(newExpanded);
-  };
-
   const getRelevanceColor = (score: number) => {
     if (score >= 0.8) return 'text-green-600 dark:text-green-400';
     if (score >= 0.6) return 'text-blue-600 dark:text-blue-400';
@@ -94,7 +85,7 @@ export const SkillCard: React.FC<SkillCardProps> = ({
     <motion.div
       initial={{ y: 20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden`}
+      className="backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 overflow-hidden"
     >
       <div className={`px-6 py-4 ${color.bg} border-b ${color.border}`}>
         <div className="flex items-center justify-between">
@@ -103,7 +94,7 @@ export const SkillCard: React.FC<SkillCardProps> = ({
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
               {title}
             </h3>
-            <span className={`ml-2 px-2 py-1 text-xs font-medium rounded-full ${color.badge}`}>
+            <span className={`ml-3 px-2 py-1 text-xs font-medium rounded-full ${color.badge}`}>
               {displaySkills.length} skills
             </span>
           </div>
@@ -112,31 +103,37 @@ export const SkillCard: React.FC<SkillCardProps> = ({
 
       <div className="px-6 py-3 border-b border-gray-200 dark:border-gray-700">
         <div className="flex flex-col sm:flex-row gap-3">
-          <select
-            value={filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value)}
-            className="flex-1 px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-          >
-            {categories.map(cat => (
-              <option key={cat} value={cat}>
-                {cat === 'all' ? 'All Categories' : cat}
-              </option>
-            ))}
-          </select>
+          <div className="flex items-center gap-2 flex-1">
+            <FunnelIcon className="h-4 w-4 text-gray-400" />
+            <select
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+              className="flex-1 px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            >
+              {categories.map(cat => (
+                <option key={cat} value={cat}>
+                  {cat === 'all' ? 'All Categories' : cat}
+                </option>
+              ))}
+            </select>
+          </div>
           
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as any)}
-            className="flex-1 px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-          >
-            <option value="relevance">Sort by Relevance</option>
-            <option value="name">Sort by Name</option>
-            <option value="category">Sort by Category</option>
-          </select>
+          <div className="flex items-center gap-2 flex-1">
+            <ArrowsUpDownIcon className="h-4 w-4 text-gray-400" />
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="flex-1 px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            >
+              <option value="relevance">Sort by Relevance</option>
+              <option value="name">Sort by Name</option>
+              <option value="category">Sort by Category</option>
+            </select>
+          </div>
         </div>
       </div>
 
-      <div className="px-6 py-4 max-h-96 overflow-y-auto">
+      <div className="px-6 py-4 max-h-96 overflow-y-auto custom-scrollbar">
         <AnimatePresence>
           {displaySkills.length > 0 ? (
             <div className="space-y-2">
@@ -147,8 +144,7 @@ export const SkillCard: React.FC<SkillCardProps> = ({
                   animate={{ x: 0, opacity: 1 }}
                   exit={{ x: 20, opacity: 0 }}
                   transition={{ duration: 0.2, delay: index * 0.02 }}
-                  className={`p-3 rounded-lg ${color.bg} ${color.hover} cursor-pointer transition-all`}
-                  onClick={() => toggleSkillExpansion(skill.name)}
+                  className={`p-3 rounded-lg ${color.bg} ${color.hover} transition-all`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
@@ -182,35 +178,6 @@ export const SkillCard: React.FC<SkillCardProps> = ({
                       </div>
                     )}
                   </div>
-                  
-                  <AnimatePresence>
-                    {expandedSkills.has(skill.name) && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700"
-                      >
-                        <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
-                          <p>
-                            <span className="font-medium">Category:</span> {skill.category || 'Other'}
-                          </p>
-                          {skill.relevance_score && (
-                            <p>
-                              <span className="font-medium">Relevance:</span> {' '}
-                              {skill.relevance_score >= 0.8 ? 'High Priority' :
-                               skill.relevance_score >= 0.6 ? 'Medium Priority' :
-                               'Low Priority'}
-                            </p>
-                          )}
-                          <p className="mt-2 text-gray-500 dark:text-gray-500 italic">
-                            Click to view learning resources for {skill.name}
-                          </p>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
                 </motion.div>
               ))}
             </div>
@@ -288,18 +255,18 @@ export const InsightsPanel: React.FC<InsightsProps> = ({
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-xl p-6"
+        className="backdrop-blur-xl bg-gradient-to-r from-indigo-50/60 to-purple-50/60 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-2xl p-6 border border-white/20 dark:border-gray-700/30"
       >
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           Key Insights
         </h3>
         
         <div className="grid md:grid-cols-3 gap-4">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
+          <div className="text-center p-4 rounded-xl bg-white/50 dark:bg-gray-800/50">
+            <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400 mb-2">
               {matchPercentage >= 70 ? '🎯' : matchPercentage >= 40 ? '📈' : '🚀'}
             </div>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               {matchPercentage >= 70 
                 ? 'Strong candidate for this role'
                 : matchPercentage >= 40
@@ -308,20 +275,20 @@ export const InsightsPanel: React.FC<InsightsProps> = ({
             </p>
           </div>
           
-          <div className="text-center">
-            <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
+          <div className="text-center p-4 rounded-xl bg-white/50 dark:bg-gray-800/50">
+            <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400 mb-2">
               {skillAnalysis.skill_gaps.length}
             </div>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               Skills to develop
             </p>
           </div>
           
-          <div className="text-center">
-            <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
+          <div className="text-center p-4 rounded-xl bg-white/50 dark:bg-gray-800/50">
+            <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400 mb-2">
               {Math.ceil(skillAnalysis.skill_gaps.length * 2)} weeks
             </div>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               Estimated learning time
             </p>
           </div>
@@ -344,10 +311,10 @@ export const InsightsPanel: React.FC<InsightsProps> = ({
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden"
+              className="backdrop-blur-xl bg-white/60 dark:bg-gray-800/60 rounded-xl shadow-md border border-white/20 dark:border-gray-700/30 overflow-hidden"
             >
               <div
-                className="p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                className="p-4 cursor-pointer hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors"
                 onClick={() => setExpandedRec(isExpanded ? null : index)}
               >
                 <div className="flex items-start">
@@ -378,7 +345,7 @@ export const InsightsPanel: React.FC<InsightsProps> = ({
                     transition={{ duration: 0.3 }}
                     className="border-t border-gray-200 dark:border-gray-700"
                   >
-                    <div className="p-4 bg-gray-50 dark:bg-gray-900/50">
+                    <div className="p-4 bg-gray-50/50 dark:bg-gray-900/50">
                       <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-3">
                         Action Steps
                       </h4>
