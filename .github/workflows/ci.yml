@@ -28,7 +28,7 @@ jobs:
     - name: Run tests
       working-directory: ./backend
       run: |
-        pytest tests/ -v --tb=short || true
+        pytest tests/ -v --tb=short
   
   frontend-test:
     runs-on: ubuntu-latest
