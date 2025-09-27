@@ -1,5 +1,9 @@
 import sys
 from pathlib import Path
+
+# Add backend to path BEFORE any app imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
@@ -8,9 +12,6 @@ from app.core.database import Base, get_db
 from app.main import app
 from app.core.auth import get_password_hash
 from app.models.user import User
-
-# Add backend to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Test database
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"

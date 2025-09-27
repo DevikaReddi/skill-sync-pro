@@ -44,17 +44,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Wait for deployments
-      run: sleep 60
+      run: sleep 120  # Increased wait time to 2 minutes
     
     - name: Verify Backend Health
       run: |
-        response=$(curl -s -o /dev/null -w "%{http_code}" https://skillsync-pro-api.onrender.com/health)
-        if [ $response -eq 200 ]; then
-          echo "✅ Backend is healthy"
-        else
-          echo "❌ Backend health check failed with status $response"
-          exit 1
-        fi
+        # Try multiple times with retries
+        for i in {1..5}; do
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://skillsync-pro-api.onrender.com/health)
+          if [ $response -eq 200 ]; then
+            echo "✅ Backend is healthy"
+            exit 0
+          else
+            echo "Attempt $i: Backend health check returned status $response"
+            if [ $i -lt 5 ]; then
+              echo "Waiting 30 seconds before retry..."
+              sleep 30
+            fi
+          fi
+        done
+        echo "❌ Backend health check failed after 5 attempts"
+        exit 1
     
     - name: Verify Frontend
       run: |
