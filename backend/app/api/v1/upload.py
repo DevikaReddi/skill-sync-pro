@@ -43,18 +43,19 @@ async def upload_resume(
         extracted_text = processor.process_document(content, file.content_type)
         
         if not extracted_text:
+            # Return 422 instead of raising an exception that causes 500
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="Could not extract text from document"
+                detail="Could not extract text from document. Please ensure the file is not corrupted."
             )
         
-        # Validate if it's a resume
+        # Validate if it's a resume (but don't fail if it's not)
         if file.content_type == 'application/pdf':
             parser = PDFParser()
             validation = parser.validate_resume_content(extracted_text)
             
             if not validation["is_valid"]:
-                logger.warning(f"Invalid resume content: {validation['issues']}")
+                logger.warning(f"Document may not be a resume: {validation['issues']}")
         
         return {
             "success": True,
@@ -64,11 +65,14 @@ async def upload_resume(
             "character_count": len(extracted_text)
         }
         
+    except HTTPException:
+        # Re-raise HTTP exceptions
+        raise
     except Exception as e:
         logger.error(f"Error processing file upload: {e}")
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error processing file"
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Error processing file: {str(e)}"
         )
 
 @router.post("/job-description")
@@ -109,9 +113,11 @@ async def upload_job_description(
             "character_count": len(extracted_text)
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error processing job description: {e}")
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error processing file"
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Error processing file: {str(e)}"
         )

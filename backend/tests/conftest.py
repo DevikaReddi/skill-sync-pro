@@ -41,7 +41,8 @@ def test_user(client):
         email="test@example.com",
         username="testuser",
         hashed_password=get_password_hash("testpass123"),
-        full_name="Test User"
+        full_name="Test User",
+        is_active=True
     )
     db.add(user)
     db.commit()
@@ -50,13 +51,22 @@ def test_user(client):
     return user
 
 @pytest.fixture(scope="function")
-def auth_headers(client):
-    """Get authentication headers."""
+def auth_headers(client, test_user):
+    """Get authentication headers. Depends on test_user to ensure user exists."""
     response = client.post(
         "/api/v1/auth/login",
-        data={"username": "testuser", "password": "testpass123"}
+        data={
+            "username": test_user.username,  # Use the test_user's username
+            "password": "testpass123"         # Use the known password
+        }
     )
-    token = response.json()["access_token"]
+    
+    # Check if login was successful
+    assert response.status_code == 200, f"Login failed: {response.text}"
+    data = response.json()
+    assert "access_token" in data, f"No access_token in response: {data}"
+    
+    token = data["access_token"]
     return {"Authorization": f"Bearer {token}"}
 
 @pytest.fixture
