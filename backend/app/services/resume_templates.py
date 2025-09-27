@@ -14,11 +14,13 @@ class ResumeTemplate:
     
     def generate_html(self, data: Dict[str, Any]) -> str:
         """Generate HTML version of resume."""
-        raise NotImplementedError
+        # Default implementation - subclasses should override
+        return f"<html><body><h1>{data.get('name', 'Resume')}</h1></body></html>"
     
     def generate_text(self, data: Dict[str, Any]) -> str:
         """Generate plain text version of resume."""
-        raise NotImplementedError
+        # Default implementation - subclasses should override
+        return f"{data.get('name', 'Resume')}\n{data.get('email', '')}"
 
 class ModernTemplate(ResumeTemplate):
     """Modern resume template."""
@@ -262,7 +264,34 @@ class ATSTemplate(ResumeTemplate):
     
     def generate_text(self, data: Dict[str, Any]) -> str:
         """Generate ATS-friendly plain text."""
-        return super().generate_text(data)  # Same as modern template for text
+        # Use the parent class implementation or create custom ATS version
+        text = f"""
+{data.get('name', 'Your Name').upper()}
+{data.get('email', 'email@example.com')} | {data.get('phone', '123-456-7890')} | {data.get('location', 'City, State')}
+
+SUMMARY
+{data.get('summary', 'Professional summary goes here...')}
+
+SKILLS
+{', '.join(data.get('skills', []))}
+
+EXPERIENCE
+"""
+        for exp in data.get('experience', []):
+            text += f"""
+{exp.get('title', 'Job Title')}
+{exp.get('company', 'Company Name')}
+{exp.get('start_date', 'Start')} - {exp.get('end_date', 'Present')}
+- {exp.get('description', 'Job description...')}
+"""
+        
+        text += "\nEDUCATION\n"
+        for edu in data.get('education', []):
+            text += f"""
+{edu.get('degree', 'Degree')}, {edu.get('school', 'School Name')}, {edu.get('graduation_date', 'Graduation Date')}
+"""
+        
+        return text
 
 class TemplateManager:
     """Manage resume templates."""
