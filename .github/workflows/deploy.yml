@@ -65,7 +65,7 @@ jobs:
     
     - name: Verify Frontend
       run: |
-        response=$(curl -s -o /dev/null -w "%{http_code}" https://skill-sync-pro.vercel.app)
+        response=$(curl -s -o /dev/null -w "%{http_code}" https://skill-sync-pro-frontend.vercel.app)
         if [ $response -eq 200 ]; then
           echo "✅ Frontend is accessible"
         else
