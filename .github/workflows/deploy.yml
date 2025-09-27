@@ -24,9 +24,7 @@ jobs:
     - name: Trigger Render Deploy
       run: |
         echo "Render will automatically deploy from the main branch"
-        # Render auto-deploys on push to main, so no action needed
-        # If you want to trigger manually, you can use Render Deploy Hook:
-        # curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        # Render auto-deploys on push to main
     
   frontend-deploy:
     needs: deploy-notification
@@ -37,32 +35,37 @@ jobs:
     - name: Trigger Vercel Deploy
       run: |
         echo "Vercel will automatically deploy from the main branch"
-        # Vercel auto-deploys on push to main, so no action needed
   
   verify-deployment:
     needs: [backend-deploy, frontend-deploy]
     runs-on: ubuntu-latest
     steps:
-    - name: Wait for deployments
-      run: sleep 120  # Increased wait time to 2 minutes
+    - name: Wait for deployments to complete
+      run: |
+        echo "Waiting 3 minutes for deployments to complete..."
+        sleep 180
     
     - name: Verify Backend Health
       run: |
-        # Try multiple times with retries
-        for i in {1..5}; do
-          response=$(curl -s -o /dev/null -w "%{http_code}" https://skillsync-pro-api.onrender.com/health)
-          if [ $response -eq 200 ]; then
-            echo "✅ Backend is healthy"
+        # Try 10 times with 30-second intervals
+        for i in {1..10}; do
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://skillsync-pro-api.onrender.com/health || echo "000")
+          
+          if [ "$response" = "200" ]; then
+            echo "✅ Backend is healthy (attempt $i)"
             exit 0
           else
-            echo "Attempt $i: Backend health check returned status $response"
-            if [ $i -lt 5 ]; then
+            echo "Attempt $i: Backend returned status $response"
+            if [ $i -lt 10 ]; then
               echo "Waiting 30 seconds before retry..."
               sleep 30
             fi
           fi
         done
-        echo "❌ Backend health check failed after 5 attempts"
+        
+        echo "❌ Backend health check failed after 10 attempts"
+        echo "Note: Render free tier services may take longer to deploy"
+        echo "Please check https://dashboard.render.com for deployment status"
         exit 1
     
     - name: Verify Frontend

@@ -1,3 +1,13 @@
+"""Main FastAPI application."""
+import os
+import sys
+
+# Add the app directory to the Python path
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+# Rest of your imports...
+from datetime import datetime
+from fastapi import FastAPI, Request, status, HTTPException
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
