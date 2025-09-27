@@ -77,4 +77,4 @@ jobs:
       run: |
         echo "✅ Deployment completed successfully!"
         echo "Backend: https://skill-sync-pro.onrender.com"
-        echo "Frontend: https://skill-sync-pro.vercel.app"
+        echo "Frontend: https://skill-sync-pro-frontend.vercel.app/"
