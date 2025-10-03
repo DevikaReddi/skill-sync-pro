@@ -19,7 +19,7 @@
     <strong>Intelligently analyze resumes, identify skill gaps, and get actionable recommendations to improve job match scores</strong>
   </p>
 
-  [🚀 Live Demo](https://skill-sync-pro.vercel.app) | [📚 API Docs](https://skill-sync-pro.onrender.com/docs) | [🐛 Report Bug](https://github.com/DevikaReddi/skill-sync-pro/issues) | [✨ Request Feature](https://github.com/DevikaReddi/skill-sync-pro/issues)
+  [🚀 Live Demo](https://skill-sync-pro-frontend.vercel.app) | [📚 API Docs](https://skill-sync-pro.onrender.com/docs) | [🐛 Report Bug](https://github.com/DevikaReddi/skill-sync-pro/issues) | [✨ Request Feature](https://github.com/DevikaReddi/skill-sync-pro/issues)
 </div>
 
 ---
@@ -251,7 +251,7 @@ skill-sync-pro/
 ---
 
 ## 🌐 Deployment
-- **Frontend:** https://skill-sync-pro.vercel.app  
+- **Frontend:** https://skill-sync-pro-frontend.vercel.app  
 - **Backend:** https://skill-sync-pro.onrender.com  
 - **Docs:** https://skill-sync-pro.onrender.com/docs  
 
@@ -263,7 +263,7 @@ SECRET_KEY=your-secret-key-here
 DATABASE_URL=postgresql://user:pass@localhost/dbname
 REDIS_URL=redis://localhost:6379
 ENV=production
-CORS_ORIGINS=https://skill-sync-pro.vercel.app
+CORS_ORIGINS=https://skill-sync-pro-frontend.vercel.app
 ```
 
 **Frontend (.env.production)**
