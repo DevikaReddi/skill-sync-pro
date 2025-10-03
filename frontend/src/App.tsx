@@ -177,7 +177,7 @@ function App() {
       {/* Simplified Footer */}
       <footer className="fixed bottom-0 left-0 right-0 py-3 backdrop-blur-lg bg-white/50 dark:bg-gray-900/50 border-t border-white/20 dark:border-gray-800/30">
         <div className="max-w-7xl mx-auto px-4 flex justify-between items-center text-xs text-gray-600 dark:text-gray-400">
-          <span>© 2024 SkillSync Pro</span>
+          <span>© 2025 SkillSync Pro</span>
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1">
               <span className={`w-2 h-2 rounded-full ${apiStatus === 'online' ? 'bg-green-500' : 'bg-red-500'}`} />

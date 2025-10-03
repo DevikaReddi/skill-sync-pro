@@ -261,18 +261,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                   </button>
                 </div>
 
-                {/* Demo Credentials */}
-                {mode === 'login' && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="mt-4 p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800"
-                  >
-                    <p className="text-xs text-center text-blue-700 dark:text-blue-300">
-                      Demo: username: <strong>demo</strong> | password: <strong>demo123</strong>
-                    </p>
-                  </motion.div>
-                )}
               </div>
             </div>
           </motion.div>
